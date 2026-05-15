@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الملف الشخصي | الصح من الغلط</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="profile-page-body">
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-logo">
+                الصح <span class="accent-gold">من</span> الغلط
+            </a>
+            <div class="navbar-links desktop-only">
+                <a href="index.html">العودة للرئيسية</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-page">
+        <div class="profile-container slide-up">
+            <a href="index.html" class="back-btn glass">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>العودة للرئيسية</span>
+            </a>
+
+            <div class="profile-content glass" id="profile-content">
+                <!-- Profile content dynamically injected here -->
+                <div style="text-align: center; padding: 50px;">جاري التحميل...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer glass">
+        <div class="footer-bottom" style="padding-top: 0; border: none; margin-top: 20px;">
+            <p>&copy; <span class="year-span"></span> مبادرة الصح من الغلط. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfileData();
+        });
+    </script>
+</body>
+</html>
