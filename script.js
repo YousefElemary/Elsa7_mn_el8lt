@@ -1,11 +1,86 @@
 // --- Data Mocks ---
-// Blog removed: blogPosts data deleted
-        fullBio: 'اسماء تعمل جاهدة لنشر ثقافة "الصح من الغلط" عبر جميع المنصات الاجتماعية.',
+
+const teamMembers = [
+    {
+        id: 1,
+        name: 'يوسف المعلم',
+        role: 'مؤسس المبادرة',
+        shortDesc: 'يعمل على نشر أفكار المبادرة وتصميم المحتوى التوعوي.',
+        fullBio: 'يوسف يقود فريق الصح من الغلط ويعمل على خلق محتوى هادف يلامس قضايا المجتمع ويحفز الشباب على التمييز بين الصح والغلط.',
+        avatar: 'Yousef.jpeg',
+        social: { facebook: '#', instagram: '#', linkedin: '#' }
+    },
+    {
+        id: 2,
+        name: 'مروة أحمد',
+        role: 'منسقة المحتوى',
+        shortDesc: 'تنظم الحملات التوعوية وتدير التواصل مع الجمهور.',
+        fullBio: 'مروة تتابع أحدث القضايا الاجتماعية وتعمل على تحويلها إلى محتوى توعوي جذاب وملهم لمتابعي المبادرة.',
+        avatar: 'Mona.jpeg',
+        social: { facebook: '#', instagram: '#', linkedin: '#' }
+    },
+    {
+        id: 3,
+        name: 'عمر عبدالله',
+        role: 'باحث اجتماعي',
+        shortDesc: 'يحلل القضايا الاجتماعية ويقترح مواضيع للنشر.',
+        fullBio: 'عمر يركز على فهم تحديات المجتمع ويقدم تحليلات مبسطة تساعد الجمهور على رؤية الواقع بوضوح أكبر.',
+        avatar: 'Marwan.jpeg',
+        social: { facebook: '#', instagram: '#', linkedin: '#' }
+    },
+    {
+        id: 4,
+        name: 'أسماء فؤاد',
+        role: 'مسؤولة الإعلام',
+        shortDesc: 'تدير الحملات على منصات التواصل الاجتماعي.',
+        fullBio: 'أسماء تعمل جاهدة لنشر ثقافة "الصح من الغلط" عبر جميع المنصات الاجتماعية.',
         avatar: 'Asmaa.jpeg',
         social: { facebook: '#', instagram: '#', linkedin: '#' }
     }
 ];
 
+const volunteerMembers = [
+    {
+        id: 1,
+        name: 'باتريك أسامة',
+        role: 'مسئول عن المتطوعين',
+        shortDesc: 'مهمته توزيع المهام و الاحتفاظ على سير المتطوعين بشكل متوازٍ.',
+        avatar: '657518365_122103158414917687_2018520676206605947_n.jpg',
+        social: { facebook: '#', instagram: '#', linkedin: '#' }
+    },
+    {
+        id: 2,
+        name: 'نور الدين',
+        role: 'متطوعة دعم المجتمع',
+        shortDesc: 'تعمل على التواصل مع المدارس والمجموعات الشبابية.',
+        avatar: 'Yousef.jpeg',
+        social: { facebook: '#', instagram: '#', linkedin: '#' }
+    },
+    {
+        id: 3,
+        name: 'سارة حسين',
+        role: 'متطوعة فعالية',
+        shortDesc: 'تنظم اللقاءات وتساعد في إدارة الحضور والنقاشات.',
+        avatar: 'Mona.jpeg',
+        social: { facebook: '#', instagram: '#', linkedin: '#' }
+    },
+    {
+        id: 4,
+        name: 'إيهاب محمود',
+        role: 'متطوع دعم فني',
+        shortDesc: 'يساعد في تنسيق المحتوى الرقمي وتحسين تجربة المستخدم.',
+        avatar: 'Marwan.jpeg',
+        social: { facebook: '#', instagram: '#', linkedin: '#' }
+    },
+    {
+        id: 5,
+        name: 'هبة خالد',
+        role: 'متطوعة توصيل رسائل',
+        shortDesc: 'تساهم في نشر المبادرة داخل المجتمع وتوحيد الفرق التطوعية.',
+        avatar: 'Mona.jpeg',
+        social: { facebook: '#', instagram: '#', linkedin: '#' }
+    }
+];
 
 const blogPosts = [
     {
@@ -115,6 +190,7 @@ const observer = new IntersectionObserver((entries, observer) => {
 document.addEventListener('DOMContentLoaded', () => {
     // Render Data on Home Page first so cards exist in DOM
     renderTeamMembers();
+    renderVolunteerMembers();
 
     const slideElements = document.querySelectorAll('.slide-up, .about-card, .team-card');
     slideElements.forEach(el => {
@@ -164,6 +240,25 @@ function renderTeamMembers() {
                 <span>عرض الملف الشخصي</span>
             </div>
         </a>
+    `).join('');
+}
+
+function renderVolunteerMembers() {
+    const container = document.getElementById('volunteer-container');
+    if(!container) return;
+
+    container.innerHTML = volunteerMembers.map(member => `
+        <div class="team-card glass">
+            <div class="member-avatar">
+                <img src="${member.avatar}" alt="${member.name}" class="avatar-img">
+            </div>
+
+            <div class="member-info">
+                <h3>${member.name}</h3>
+                <p class="role">${member.role}</p>
+                <p class="short-desc">${member.shortDesc}</p>
+            </div>
+        </div>
     `).join('');
 }
 

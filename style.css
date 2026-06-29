@@ -572,7 +572,11 @@ a { text-decoration: none; color: inherit; }
               radial-gradient(circle at bottom left, rgba(0, 240, 255, 0.05) 0%, transparent 50%);
 }
 
-.profile-page, .article-page {
+.volunteer-page-body {
+  background: var(--bg-dark);
+}
+
+.profile-page, .article-page, .volunteer-page {
   min-height: 100vh;
   padding: 120px 20px 60px;
 }
@@ -599,8 +603,42 @@ a { text-decoration: none; color: inherit; }
   color: var(--accent-gold);
 }
 
-.profile-content, .article-content {
+.profile-content, .article-content, .volunteer-card {
   padding: 50px;
+}
+
+.volunteer-card {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.volunteer-card h3 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: var(--text-main);
+}
+
+.volunteer-card p {
+  font-size: 1.1rem;
+  line-height: 1.9;
+  margin-bottom: 35px;
+  color: #e9e9e9;
+}
+
+.cta-btn {
+  display: inline-block;
+  padding: 18px 35px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-blue));
+  color: #0a0a0c;
+  font-weight: 700;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cta-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(212, 175, 55, 0.25);
 }
 
 .profile-header {

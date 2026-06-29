@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الملف الشخصي | الصح من الغلط</title>
+    <title>التطوع | الصح من الغلط</title>
+    <meta name="description" content="انضم لفريق مبادرة الصح من الغلط وساهم في نشر الوعي الإيجابي في المجتمع.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="profile-page-body">
-
-    <!-- Navbar -->
+<body class="volunteer-page-body">
     <nav class="navbar" id="navbar">
         <div class="navbar-container">
             <a href="index.html" class="navbar-logo">
@@ -37,21 +38,25 @@
         </div>
     </nav>
 
-    <div class="profile-page">
-        <div class="profile-container slide-up">
-            <a href="index.html" class="back-btn glass">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                <span>العودة للرئيسية</span>
-            </a>
+    <main class="hero-section volunteer-page">
+        <div class="particles-bg" id="particles"></div>
+        <div class="hero-content">
+            <div class="hero-description glass slide-up" style="animation-delay: 0.2s;">
+                <div class="section-header">
+                    <h2>التطوع مع <span class="accent-gold">الصح من</span> الغلط</h2>
+                    <div class="divider"></div>
+                    <p>انضم إلى فريقنا وساهم في نشر الوعي والقيم الإيجابية داخل المجتمع.</p>
+                </div>
 
-            <div class="profile-content glass" id="profile-content">
-                <!-- Profile content dynamically injected here -->
-                <div style="text-align: center; padding: 50px;">جاري التحميل...</div>
+                <div class="volunteer-card glass">
+                    <h3>قدم معنا</h3>
+                    <p>إذا كنت تريد أن تكون جزءًا من المبادرة، شاركنا طاقتك وحماسك عبر تعبئة الاستمارة التالية. التطوع معنا يمنحك فرصة العمل ضمن فريق متعاون لتحقيق تأثير اجتماعي حقيقي.</p>
+                    <a href="https://forms.gle/ejfkW6cY3Ujr9NSz7" class="cta-btn" target="_blank" rel="noopener noreferrer">التطوع الآن</a>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Footer -->
     <footer class="footer glass">
         <div class="footer-bottom" style="padding-top: 0; border: none; margin-top: 20px;">
             <p>&copy; <span class="year-span"></span> مبادرة الصح من الغلط. جميع الحقوق محفوظة.</p>
@@ -59,10 +64,5 @@
     </footer>
 
     <script src="script.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProfileData();
-        });
-    </script>
 </body>
 </html>
