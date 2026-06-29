@@ -1,36 +1,5 @@
 // --- Data Mocks ---
-const teamMembers = [
-    {
-        id: 1, name:'Abdelrahman Elkomy', role: 'مؤسس المبادرة',
-        shortDesc: 'صاحب فكرة المبادرة والمدير العام لها.',
-        fullBio: 'الكومي هو المؤسس الرئيسي لمبادرة "الصح من الغلط". يمتلك خبرة تفوق العشر سنوات في مجال التنمية المجتمعية وتوجيه الشباب. يهدف من خلال هذه المبادرة إلى خلق بيئة إيجابية تساهم في بناء جيل واعٍ.',
-        avatar: 'Abdelrahman.jpeg',
-        social: { facebook: '#', instagram: '#', linkedin: '#' }
-    },
-    {
-        id: 2, name: 'Marwan Samir', role: 'رئيسة التحرير',
-        shortDesc: 'مسؤولة عن مراجعة وتدقيق المحتوى المنشور.',
-        fullBio: 'مروان يشرف على جميع المقالات والمنشورات للتأكد من توافقها مع أهداف المبادرة.',
-        avatar: 'Marwan.jpeg',
-        social: { facebook: '#', instagram: '#', linkedin: '#' }
-    },
-    {
-        id: 3, name: 'Yousef Mohamed ELemary', role: 'مدير التقنية',
-        shortDesc: 'مطور الويب والمسؤول عن المنصة التقنية.',
-        fullBio: 'يوسف مهندس برمجيات محترف، يسخر مهاراته التقنية لتوفير منصة سهلة الاستخدام تخدم أهداف المبادرة وتوصل رسالتها لأكبر شريحة ممكنة.',
-        avatar: 'Yousef.jpeg',
-        social: { facebook: '#', instagram: '#', linkedin: '#' }
-    },
-    {
-        id: 4, name: 'Mona Nasr', role: 'مصممة جرافيك',
-        shortDesc: 'صانعة الهوية البصرية والتصاميم الإبداعية.',
-        fullBio: 'منى فنانة تصاميمها تساعد في إيصال أفكار المبادرة بشكل جذاب ومؤثر.',
-        avatar: 'Mona.jpeg',
-        social: { facebook: '#', instagram: '#', linkedin: '#' }
-    },
-    {
-        id: 5, name: 'Asmaa Ashraf', role: 'مسؤول التواصل الاجتماعي',
-        shortDesc: 'يدير حسابات المبادرة ويتواصل مع المتابعين.',
+// Blog removed: blogPosts data deleted
         fullBio: 'اسماء تعمل جاهدة لنشر ثقافة "الصح من الغلط" عبر جميع المنصات الاجتماعية.',
         avatar: 'Asmaa.jpeg',
         social: { facebook: '#', instagram: '#', linkedin: '#' }
@@ -92,12 +61,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Navbar Scroll Effect
 const navbar = document.getElementById('navbar');
+const navbarLogoImg = document.querySelector('.navbar-logo-img');
+const heroLogo = document.querySelector('.logo-placeholder');
 if(navbar) {
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
             navbar.classList.add('scrolled');
+            if(navbarLogoImg) navbarLogoImg.classList.add('visible');
+            if(heroLogo) heroLogo.classList.add('hidden');
         } else {
             navbar.classList.remove('scrolled');
+            if(navbarLogoImg) navbarLogoImg.classList.remove('visible');
+            if(heroLogo) heroLogo.classList.remove('hidden');
         }
     });
 }
@@ -139,10 +114,9 @@ const observer = new IntersectionObserver((entries, observer) => {
 // Observe all slide-up elements
 document.addEventListener('DOMContentLoaded', () => {
     // Render Data on Home Page first so cards exist in DOM
-    renderBlogPosts();
     renderTeamMembers();
 
-    const slideElements = document.querySelectorAll('.slide-up, .about-card, .blog-card, .team-card');
+    const slideElements = document.querySelectorAll('.slide-up, .about-card, .team-card');
     slideElements.forEach(el => {
         // Add class to non-manually tagged elements to prep for animation
         if(!el.classList.contains('slide-up')){
@@ -167,25 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // --- Render Functions (Home Page) ---
-function renderBlogPosts() {
-    const container = document.getElementById('blog-container');
-    if(!container) return;
-
-    container.innerHTML = blogPosts.map(post => `
-        <a href="article.html?id=${post.id}" class="blog-card glass">
-            <div class="blog-meta">
-                <span>${post.date}</span>
-                <span>${post.author}</span>
-            </div>
-            <h3>${post.title}</h3>
-            <p class="blog-excerpt">${post.excerpt}</p>
-            <div class="read-more">
-                <span>اقرأ المزيد</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </div>
-        </a>
-    `).join('');
-}
+// Blog rendering removed
 
 function renderTeamMembers() {
     const container = document.getElementById('team-container');
@@ -266,29 +222,4 @@ function loadProfileData() {
 `;
 }
 
-function loadArticleData() {
-    let id = getUrlParam('id');
-    if (!id) id = 1; // Fallback for direct previews
-    const container = document.getElementById('article-content');
-    if(!container) return;
-
-    const post = blogPosts.find(p => p.id == id);
-    
-    if(!post) {
-        container.innerHTML = `<div style="text-align: center; padding: 50px;"><h2>لم يتم العثور على المقال</h2></div>`;
-        return;
-    }
-
-    container.innerHTML = `
-        <div class="article-header">
-            <h1>${post.title}</h1>
-            <div class="article-meta">
-                <span>تاريخ النشر: ${post.date}</span>
-                <span>الكاتب: ${post.author}</span>
-            </div>
-        </div>
-        <div class="article-body">
-            ${post.content}
-        </div>
-    `;
-}
+// loadArticleData removed (blog deleted)

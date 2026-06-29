@@ -133,6 +133,35 @@ a { text-decoration: none; color: inherit; }
   letter-spacing: 1px;
 }
 
+/* Small logo that appears in navbar when scrolled */
+.navbar-logo-img {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-left: 12px;
+  vertical-align: middle;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.9);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+.navbar-logo-img.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Hide / shrink hero logo when scrolled */
+.logo-placeholder {
+  transition: opacity 0.4s ease, transform 0.45s ease, visibility 0.45s;
+}
+.logo-placeholder.hidden {
+  opacity: 0;
+  transform: scale(0.6) translateY(-10px);
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .navbar-links {
   display: flex;
   gap: 30px;
@@ -381,62 +410,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 
-/* ===== BLOG SECTION ===== */
-.blog-section {
-  padding: 100px 20px;
-  position: relative;
-}
-
-.blog-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 30px;
-}
-
-.blog-card {
-  display: block;
-  padding: 30px;
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
-  position: relative;
-}
-
-.blog-card:hover {
-  transform: translateY(-10px);
-  border-color: var(--accent-blue);
-  box-shadow: 0 10px 30px rgba(0, 240, 255, 0.1);
-}
-
-.blog-meta {
-  font-size: 0.9rem;
-  color: var(--accent-gold);
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.blog-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  color: var(--text-main);
-  transition: color 0.3s;
-}
-
-.blog-card:hover h3 {
-  color: var(--accent-blue);
-}
-
-.blog-excerpt {
-  margin-bottom: 20px;
-}
-
-.read-more {
-  display: inline-flex;
-  align-items: center;
-  color: var(--accent-blue);
-  font-weight: 600;
-  gap: 5px;
-}
-
+/* Blog styles removed (blog deleted) */
 /* ===== TEAM SECTION ===== */
 .team-section {
   padding: 100px 20px;
