@@ -679,6 +679,26 @@ a { text-decoration: none; color: inherit; }
   box-shadow: 0 14px 30px rgba(212, 175, 55, 0.25);
 }
 
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.courses-grid .about-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: right;
+  gap: 15px;
+}
+
+.courses-grid .about-card p {
+  color: #e6e6e6;
+  margin-bottom: 10px;
+}
+
 .profile-header {
   display: flex;
   align-items: center;
