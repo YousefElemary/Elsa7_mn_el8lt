@@ -53,40 +53,27 @@ const volunteerMembers = [
         id: 1,
         name: 'باتريك أسامة',
         role: 'مسئول عن المتطوعين',
-        shortDesc: 'مهمته توزيع المهام و الاحتفاظ على سير المتطوعين بشكل متوازٍ.',
+        shortDesc: 'مهمته توزيع المهام والاحتفاظ على سير المتطوعين بشكل متوازن، بالإضافة إلى تطوير الصفحة الرئيسية للمبادرة.',
+        fullBio: 'باتريك أسامة المسؤول عن المتطوعين الذين يساهمون في تنظيم العمل التطوعي داخل المبادرة. يركز على توزيع المهام بعناية، والحفاظ على انسيابية العمل الجماعي، كما يشارك في تطوير الصفحة الرئيسية للمبادرة لتكون أكثر تأثيراً ومواكبة لاحتياجات الجمهور.',
         avatar: '657518365_122103158414917687_2018520676206605947_n.jpg',
         social: { facebook: '#', instagram: '#', linkedin: '#' }
     },
     {
-        id: 2,
-        name: 'نور الدين',
-        role: 'متطوعة دعم المجتمع',
-        shortDesc: 'تعمل على التواصل مع المدارس والمجموعات الشبابية.',
-        avatar: 'Yousef.jpeg',
+        id: 6,
+        name: 'مينا جرجس',
+        role: 'Developer & Video Editor',
+        shortDesc: 'تطوير الأفكار وتحسين التجربة وتطوير موقع كورسات المبادرة.',
+        fullBio: 'مينا جرجس يساهم في تحويل الأفكار إلى حلول عملية ومحتوى رقمي احترافي. يعمل على تطوير التجربة الرقمية للمبادرة، ويساعد في تحسين موقع الكورسات بحيث يصبح أداة فعالة في نشر الرسائل والمهارات التي تتبناها المبادرة.',
+        avatar: 'mina.jpeg',
         social: { facebook: '#', instagram: '#', linkedin: '#' }
     },
     {
-        id: 3,
-        name: 'سارة حسين',
-        role: 'متطوعة فعالية',
-        shortDesc: 'تنظم اللقاءات وتساعد في إدارة الحضور والنقاشات.',
-        avatar: 'Mona.jpeg',
-        social: { facebook: '#', instagram: '#', linkedin: '#' }
-    },
-    {
-        id: 4,
-        name: 'إيهاب محمود',
-        role: 'متطوع دعم فني',
-        shortDesc: 'يساعد في تنسيق المحتوى الرقمي وتحسين تجربة المستخدم.',
-        avatar: 'Marwan.jpeg',
-        social: { facebook: '#', instagram: '#', linkedin: '#' }
-    },
-    {
-        id: 5,
-        name: 'هبة خالد',
-        role: 'متطوعة توصيل رسائل',
-        shortDesc: 'تساهم في نشر المبادرة داخل المجتمع وتوحيد الفرق التطوعية.',
-        avatar: 'Mona.jpeg',
+        id: 7,
+        name: 'جورج نادر',
+        role: 'Game Developer',
+        shortDesc: 'تطوير اللعب بحيث نستطيع إيصال رسالتنا إلى الفئة التي تحب الألعاب الإلكترونية.',
+        fullBio: 'جورج نادر يعمل على تطوير الألعاب كوسيلة مؤثرة لنقل رسائل المبادرة إلى الفئة التي تهتم بالألعاب الإلكترونية. يهدف إلى تصميم تجارب تفاعلية تجمع بين التسلية والوعي، وتساعد على إيصال الأفكار الإيجابية بطريقة ممتعة ومناسبة للجمهور الشبابي.',
+        avatar: 'Goerge nader.jpeg',
         social: { facebook: '#', instagram: '#', linkedin: '#' }
     }
 ];
@@ -257,7 +244,7 @@ function renderVolunteerMembers() {
     if(!container) return;
 
     container.innerHTML = volunteerMembers.map(member => `
-        <div class="team-card glass">
+        <a href="profile.html?type=volunteer&id=${member.id}" class="team-card glass">
             <div class="member-avatar">
                 <img src="${member.avatar}" alt="${member.name}" class="avatar-img">
             </div>
@@ -267,7 +254,11 @@ function renderVolunteerMembers() {
                 <p class="role">${member.role}</p>
                 <p class="short-desc">${member.shortDesc}</p>
             </div>
-        </div>
+
+            <div class="view-profile-btn">
+                <span>عرض الملف الشخصي</span>
+            </div>
+        </a>
     `).join('');
 }
 
@@ -279,11 +270,14 @@ function getUrlParam(param) {
 
 function loadProfileData() {
     let id = getUrlParam('id');
+    const type = getUrlParam('type');
     if (!id) id = 1; // Fallback for direct previews
     const container = document.getElementById('profile-content');
     if(!container) return;
 
-    const member = teamMembers.find(m => m.id == id);
+    const member = type === 'volunteer'
+        ? volunteerMembers.find(m => m.id == id)
+        : teamMembers.find(m => m.id == id);
     
     if(!member) {
         container.innerHTML = `<div style="text-align: center; padding: 50px;"><h2>لم يتم العثور على العضو</h2></div>`;
