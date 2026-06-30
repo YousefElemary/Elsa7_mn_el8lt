@@ -3,28 +3,28 @@
 const teamMembers = [
     {
         id: 1,
-        name: 'يوسف المعلم',
+        name: 'عبدالرحمن أشرف الكومى',
         role: 'مؤسس المبادرة',
-        shortDesc: 'يعمل على نشر أفكار المبادرة وتصميم المحتوى التوعوي.',
-        fullBio: 'يوسف يقود فريق الصح من الغلط ويعمل على خلق محتوى هادف يلامس قضايا المجتمع ويحفز الشباب على التمييز بين الصح والغلط.',
-        avatar: 'Yousef.jpeg',
+        shortDesc: 'يقود فريق الصح من الغلط',
+        fullBio: 'عبدالرحمن يقود فريق الصح من الغلط ويعمل على خلق محتوى هادف يلامس قضايا المجتمع ويحفز الشباب على التمييز بين الصح والغلط.',
+        avatar: 'Abdelrahman.jpeg',
         social: { facebook: '#', instagram: '#', linkedin: '#' }
     },
     {
         id: 2,
-        name: 'مروة أحمد',
+        name: 'منى نصر الدين سلامة',
         role: 'منسقة المحتوى',
-        shortDesc: 'تنظم الحملات التوعوية وتدير التواصل مع الجمهور.',
-        fullBio: 'مروة تتابع أحدث القضايا الاجتماعية وتعمل على تحويلها إلى محتوى توعوي جذاب وملهم لمتابعي المبادرة.',
+        shortDesc: 'تشارك في تنظيم المحتوى والتواصل مع الجمهور.',
+        fullBio: 'منى نصر الدين سلامة تعمل على تنظيم المحتوى التوعوي وتطوير الرسائل التي تعكس قيم المبادرة وتساهم في التواصل مع الجمهور بشكل مؤثر.',
         avatar: 'Mona.jpeg',
         social: { facebook: '#', instagram: '#', linkedin: '#' }
     },
     {
         id: 3,
-        name: 'عمر عبدالله',
-        role: 'باحث اجتماعي',
-        shortDesc: 'يحلل القضايا الاجتماعية ويقترح مواضيع للنشر.',
-        fullBio: 'عمر يركز على فهم تحديات المجتمع ويقدم تحليلات مبسطة تساعد الجمهور على رؤية الواقع بوضوح أكبر.',
+        name: 'مروان سمير جابر',
+        role: 'مسئول وسائل التواصل والتسويق',
+        shortDesc: 'يدير وسائل التواصل الاجتماعي ويسوق للمبادرة.',
+        fullBio: 'مروان مسؤول عن إدارة وسائل التواصل الاجتماعي والتسويق للمبادرة، ويعمل على نشر رسائلها ومبادئها بشكل فعال.',
         avatar: 'Marwan.jpeg',
         social: { facebook: '#', instagram: '#', linkedin: '#' }
     },
@@ -35,6 +35,15 @@ const teamMembers = [
         shortDesc: 'تدير الحملات على منصات التواصل الاجتماعي.',
         fullBio: 'أسماء تعمل جاهدة لنشر ثقافة "الصح من الغلط" عبر جميع المنصات الاجتماعية.',
         avatar: 'Asmaa.jpeg',
+        social: { facebook: '#', instagram: '#', linkedin: '#' }
+    },
+    {
+        id: 5,
+        name: 'يوسف محمد العمرى',
+        role: 'مصمم فيديوهات',
+        shortDesc: 'يوسف هو المساعد لنا فى تحويل أفكارنا الى فيديوهات بشكل احترافى.',
+        fullBio: 'يوسف هو المساعد لنا فى تحويل أفكارنا الى فيديوهات بشكل احترافى، ويعمل على تحويل الأفكار إلى محتوى بصري جذاب واحترافي يساهم في توصيل رسائل المبادرة بشكل مؤثر.',
+        avatar: 'Yousef.jpeg',
         social: { facebook: '#', instagram: '#', linkedin: '#' }
     }
 ];
@@ -293,16 +302,16 @@ function loadProfileData() {
             <p class="profile-role">${member.role}</p>
 
             <div class="profile-socials">
-                <a href="${member.social.facebook}" class="social-icon-small">
-                    Facebook
+                <a href="${member.social.facebook}" class="social-icon-small" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
                 </a>
 
-                <a href="${member.social.instagram}" class="social-icon-small">
-                    Instagram
+                <a href="${member.social.instagram}" class="social-icon-small" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                 </a>
 
-                <a href="${member.social.linkedin}" class="social-icon-small">
-                    LinkedIn
+                <a href="${member.social.linkedin}" class="social-icon-small" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path><path d="M4 11h4v8H4z"></path><path d="M12 11h4v1.2h.03c.56-1.06 1.93-2.18 3.97-2.18 4.24 0 5.02 2.79 5.02 6.41V19h-4v-7.3c0-1.74-.03-3.98-2.43-3.98-2.43 0-2.8 1.9-2.8 3.86V19h-4z"></path></svg>
                 </a>
             </div>
         </div>
