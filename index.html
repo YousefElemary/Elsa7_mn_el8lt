@@ -172,6 +172,47 @@
         </div>
     </div>
 
+    <!-- ===== FLOATING CHATBOT ===== -->
+
+<!-- Toggle Button -->
+<button class="chatbot-toggle" id="chatbotToggle" aria-label="Open Chat">
+    💬
+    <span class="notification-dot"></span>
+</button>
+
+<!-- Chat Window -->
+<div class="chatbot-window" id="chatbotWindow">
+    <!-- Header -->
+    <div class="chatbot-header">
+        <div class="chatbot-header-info">
+            <div class="avatar">📖</div>
+            <div>
+                <h3>الصح من الغلط</h3>
+                <p>اسألني أي شيء عن المبادرة</p>
+            </div>
+        </div>
+        <button class="chatbot-close" id="chatbotClose">✕</button>
+    </div>
+
+    <!-- Quick Buttons -->
+    <div class="chatbot-quick-buttons">
+        <button onclick="askQuick('ما هي مبادرة الصح من الغلط؟')">🤔 ما هي المبادرة؟</button>
+        <button onclick="askQuick('من هو مؤسس المبادرة؟')">👤 المؤسس</button>
+        <button onclick="askQuick('كيف يمكنني التطوع؟')">🤝 التطوع</button>
+        <button onclick="askQuick('ما هي الكورسات التي تقدمها المبادرة؟')">📚 الكورسات</button>
+    </div>
+
+    <!-- Messages -->
+    <div class="chatbot-messages" id="chatbotMessages">
+        <!-- Messages will appear here -->
+    </div>
+
+    <!-- Input -->
+    <div class="chatbot-input-area">
+        <input type="text" id="chatbotInput" placeholder="اكتب سؤالك هنا..." dir="rtl">
+        <button onclick="sendChatbotMessage()">إرسال</button>
+    </div>
+</div>
     <script src="script.js"></script>
 </body>
 </html>

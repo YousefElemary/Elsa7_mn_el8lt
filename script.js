@@ -125,8 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loader) {
         setTimeout(() => {
             loader.classList.add('hidden');
-            setTimeout(() => loader.style.display = 'none', 500); // remove from flow
-        }, 800); // 0.8s fake load time for effect
+            setTimeout(() => loader.style.display = 'none', 500);
+        }, 800);
     }
 });
 
@@ -156,7 +156,6 @@ if(mobileMenuBtn && mobileMenu) {
         mobileMenu.classList.toggle('active');
     });
     
-    // Close menu when clicking a link
     const mobileLinks = document.querySelectorAll('.mobile-link');
     mobileLinks.forEach(link => {
         link.addEventListener('click', () => {
@@ -176,7 +175,6 @@ const observer = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('visible');
-            // Unobserve after animating once
             observer.unobserve(entry.target);
         }
     });
@@ -184,20 +182,17 @@ const observer = new IntersectionObserver((entries, observer) => {
 
 // Observe all slide-up elements
 document.addEventListener('DOMContentLoaded', () => {
-    // Render Data on Home Page first so cards exist in DOM
     renderTeamMembers();
     renderVolunteerMembers();
 
     const slideElements = document.querySelectorAll('.slide-up, .about-card, .team-card');
     slideElements.forEach(el => {
-        // Add class to non-manually tagged elements to prep for animation
         if(!el.classList.contains('slide-up')){
             el.classList.add('slide-up');
         }
         observer.observe(el);
     });
 
-    // Generate Particles for Hero if exists
     const particlesContainer = document.getElementById('particles');
     if(particlesContainer) {
         for(let i=0; i<20; i++) {
@@ -212,8 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- Render Functions (Home Page) ---
-// Blog rendering removed
+// --- Render Functions ---
 
 function renderTeamMembers() {
     const container = document.getElementById('team-container');
@@ -221,17 +215,14 @@ function renderTeamMembers() {
 
     container.innerHTML = teamMembers.map(member => `
         <a href="profile.html?id=${member.id}" class="team-card glass">
-            
             <div class="member-avatar">
                 <img src="${member.avatar}" alt="${member.name}" class="avatar-img">
             </div>
-
             <div class="member-info">
                 <h3>${member.name}</h3>
                 <p class="role">${member.role}</p>
                 <p class="short-desc">${member.shortDesc}</p>
             </div>
-
             <div class="view-profile-btn">
                 <span>عرض الملف الشخصي</span>
             </div>
@@ -248,13 +239,11 @@ function renderVolunteerMembers() {
             <div class="member-avatar">
                 <img src="${member.avatar}" alt="${member.name}" class="avatar-img">
             </div>
-
             <div class="member-info">
                 <h3>${member.name}</h3>
                 <p class="role">${member.role}</p>
                 <p class="short-desc">${member.shortDesc}</p>
             </div>
-
             <div class="view-profile-btn">
                 <span>عرض الملف الشخصي</span>
             </div>
@@ -262,7 +251,8 @@ function renderVolunteerMembers() {
     `).join('');
 }
 
-// --- Dynamic Page Loaders (Profile / Article) ---
+// --- Dynamic Page Loaders ---
+
 function getUrlParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
@@ -271,7 +261,7 @@ function getUrlParam(param) {
 function loadProfileData() {
     let id = getUrlParam('id');
     const type = getUrlParam('type');
-    if (!id) id = 1; // Fallback for direct previews
+    if (!id) id = 1;
     const container = document.getElementById('profile-content');
     if(!container) return;
 
@@ -284,40 +274,228 @@ function loadProfileData() {
         return;
     }
 
-   container.innerHTML = `
-    <div class="profile-header">
-
-        <div class="profile-avatar">
-            <img src="${member.avatar}" alt="${member.name}" class="profile-avatar-img">
-        </div>
-
-        <div class="profile-title">
-            <h1>${member.name}</h1>
-            <p class="profile-role">${member.role}</p>
-
-            <div class="profile-socials">
-                <a href="${member.social.facebook}" class="social-icon-small" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                </a>
-
-                <a href="${member.social.instagram}" class="social-icon-small" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                </a>
-
-                <a href="${member.social.linkedin}" class="social-icon-small" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path><path d="M4 11h4v8H4z"></path><path d="M12 11h4v1.2h.03c.56-1.06 1.93-2.18 3.97-2.18 4.24 0 5.02 2.79 5.02 6.41V19h-4v-7.3c0-1.74-.03-3.98-2.43-3.98-2.43 0-2.8 1.9-2.8 3.86V19h-4z"></path></svg>
-                </a>
+    container.innerHTML = `
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <img src="${member.avatar}" alt="${member.name}" class="profile-avatar-img">
+            </div>
+            <div class="profile-title">
+                <h1>${member.name}</h1>
+                <p class="profile-role">${member.role}</p>
+                <div class="profile-socials">
+                    <a href="${member.social.facebook}" class="social-icon-small" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                    </a>
+                    <a href="${member.social.instagram}" class="social-icon-small" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    </a>
+                    <a href="${member.social.linkedin}" class="social-icon-small" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path><path d="M4 11h4v8H4z"></path><path d="M12 11h4v1.2h.03c.56-1.06 1.93-2.18 3.97-2.18 4.24 0 5.02 2.79 5.02 6.41V19h-4v-7.3c0-1.74-.03-3.98-2.43-3.98-2.43 0-2.8 1.9-2.8 3.86V19h-4z"></path></svg>
+                    </a>
+                </div>
             </div>
         </div>
-
-    </div>
-
-    <div class="profile-bio">
-        <h3>نبذة شخصية</h3>
-        <div class="bio-divider"></div>
-        <p>${member.fullBio}</p>
-    </div>
-`;
+        <div class="profile-bio">
+            <h3>نبذة شخصية</h3>
+            <div class="bio-divider"></div>
+            <p>${member.fullBio}</p>
+        </div>
+    `;
 }
 
-// loadArticleData removed (blog deleted)
+// ================================================================
+// ===== FLOATING CHATBOT WITH CONVERSATION MEMORY =====
+// ================================================================
+
+// Configuration
+const CHATBOT_API_KEY = "gsk_1Z2woO8pC84akFAcn1utWGdyb3FYoURwnwphOTxALdjuktRFLuek";
+const CHATBOT_MODEL = "llama-3.1-8b-instant";
+
+// Knowledge Base
+const CHATBOT_KNOWLEDGE = `
+    📌 **معلومات عامة عن المبادرة ورؤيتها**
+    - ما هي مبادرة الصح من الغلط؟ هي مبادرة تهدف إلى تصحيح المفاهيم، نشر الوعي، وبناء جيل واعٍ يدرك الفرق بين الصح والغلط في عصر مليء بالتحديات.
+    - رؤية المبادرة: بناء مجتمع واعٍ قادر على التمييز بين الصواب والخطأ.
+    - مهمة المبادرة: نشر الوعي من خلال محتوى هادف وبرامج تفاعلية.
+    - الأهداف الرئيسية: تصحيح المفاهيم المغلوطة، توفير بيئة داعمة للنقاش البناء، وخلق تأثير إيجابي مستدام.
+
+    👥 **فريق العمل والمؤسسين**
+    - مؤسس المبادرة: عبدالرحمن أشرف الكومى.
+    - منسقة المحتوى: منى نصر الدين سلامة.
+    - مسئول وسائل التواصل والتسويق: مروان سمير جابر.
+    - مسؤولة الإعلام: أسماء أشرف عبدالفتاح خليل.
+    - مصمم الفيديوهات: يوسف محمد العمرى.
+    - مبرمج الشات بوت: محمد أحمد إبراهيم.
+
+    🤝 **التطوع والمتطوعون**
+    - كيف يمكن التطوع؟ عبر تعبئة الاستمارة الإلكترونية.
+    - مسؤول المتطوعين: باتريك أسامة.
+    - مطور الموقع والكورسات: مينا جرجس.
+    - مطور الألعاب الإلكترونية: جورج نادر.
+
+    🏢 **الشراكات والتعاون**
+    - شركاء المبادرة: أكاديمية سياج، ومكتبة مصر العامة.
+
+    📚 **الكورسات والمدونة**
+    - تقدم المبادرة "الكورس الأساسي".
+    - مقالات المدونة: "كيف نميز بين الأخبار الحقيقية والمزيفة؟"، "التنمر الإلكتروني"، "أهمية القيم في عصر التكنولوجيا".
+
+    📱 **قنوات التواصل**
+    - فيسبوك وتيك توك.
+`;
+
+// ===== CONVERSATION MEMORY =====
+let chatHistory = [];
+
+// ===== DOM Elements =====
+const toggleBtn = document.getElementById('chatbotToggle');
+const chatWindow = document.getElementById('chatbotWindow');
+const closeBtn = document.getElementById('chatbotClose');
+const messagesContainer = document.getElementById('chatbotMessages');
+const inputField = document.getElementById('chatbotInput');
+
+// Only initialize if all elements exist
+if (toggleBtn && chatWindow && closeBtn && messagesContainer && inputField) {
+
+    // ===== Add to History Function =====
+    function addToHistory(role, content) {
+        chatHistory.push({ role: role, content: content });
+        // Keep only last 20 messages to avoid token limits
+        if (chatHistory.length > 20) {
+            chatHistory = chatHistory.slice(-20);
+        }
+    }
+
+    // ===== Clear Chat History Function =====
+    window.clearChatHistory = function() {
+        chatHistory = [];
+        messagesContainer.innerHTML = '';
+        const welcomeMsg = '👋 مرحباً بك في مبادرة الصح من الغلط! كيف يمكنني مساعدتك اليوم؟';
+        addChatbotMessage(welcomeMsg, false);
+        addToHistory('assistant', welcomeMsg);
+    };
+
+    // ===== Toggle Chat =====
+    toggleBtn.addEventListener('click', () => {
+        chatWindow.classList.toggle('active');
+        if (chatWindow.classList.contains('active') && messagesContainer.children.length === 0) {
+            const welcomeMsg = '👋 مرحباً بك في مبادرة الصح من الغلط! أنا هنا للإجابة عن جميع استفساراتك حول المبادرة، فريق العمل، الكورسات، التطوع، والشراكات. كيف يمكنني مساعدتك اليوم؟';
+            addChatbotMessage(welcomeMsg, false);
+            addToHistory('assistant', welcomeMsg);
+        }
+    });
+
+    closeBtn.addEventListener('click', () => {
+        chatWindow.classList.remove('active');
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (chatWindow.classList.contains('active')) {
+            if (!chatWindow.contains(e.target) && !toggleBtn.contains(e.target)) {
+                chatWindow.classList.remove('active');
+            }
+        }
+    });
+
+    // ===== Add Message =====
+    function addChatbotMessage(text, isUser) {
+        const div = document.createElement('div');
+        div.className = `message ${isUser ? 'user' : 'bot'}`;
+        div.textContent = text;
+        messagesContainer.appendChild(div);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // ===== Typing Indicator =====
+    function showTyping() {
+        const div = document.createElement('div');
+        div.className = 'typing-indicator';
+        div.id = 'chatbotTyping';
+        div.innerHTML = `
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        `;
+        messagesContainer.appendChild(div);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function hideTyping() {
+        const typing = document.getElementById('chatbotTyping');
+        if (typing) typing.remove();
+    }
+
+    // ===== Send Message (WITH CONVERSATION MEMORY) =====
+    async function sendChatbotMessage() {
+        const question = inputField.value.trim();
+        if (!question) return;
+
+        // Add user message to UI and history
+        addChatbotMessage(question, true);
+        addToHistory('user', question);
+        inputField.value = '';
+        showTyping();
+
+        try {
+            // Build messages array with full conversation history
+            const messages = [
+                {
+                    role: "system",
+                    content: `أنت مساعد ودود ومختص لمبادرة "الصح من الغلط". 
+                    
+                    أنت تجري محادثة طبيعية مع المستخدم. تذكر ما قاله المستخدم سابقاً واستخدم السياق للإجابة.
+                    
+                    استخدم المعلومات التالية بدقة للإجابة. إذا كان السؤال خارج نطاق المبادرة، قل: "عذراً، هذا السؤال خارج نطاق المبادرة. يرجى التواصل مع فريق التطوير." 
+                    
+                    كن موجزاً ومفيداً، واستخدم النقاط عندما يكون ذلك مناسباً.
+                    استخدم العربية الفصحى أو العامية المصرية حسب ما يناسب السياق.
+
+                    المعلومات:
+                    ${CHATBOT_KNOWLEDGE}`
+                }
+            ];
+
+            // Add conversation history (last 10 messages for context)
+            const historyToSend = chatHistory.slice(-10);
+            messages.push(...historyToSend);
+
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${CHATBOT_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: CHATBOT_MODEL,
+                    messages: messages,
+                    temperature: 0.3,
+                    max_tokens: 900
+                })
+            });
+
+            const data = await response.json();
+            hideTyping();
+            const answer = data.choices[0].message.content;
+            addChatbotMessage(answer, false);
+            addToHistory('assistant', answer);
+
+        } catch (error) {
+            hideTyping();
+            addChatbotMessage("⚠️ حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.", false);
+            console.error(error);
+        }
+    }
+
+    // ===== Quick Questions =====
+    window.askQuick = async function(question) {
+        inputField.value = question;
+        await sendChatbotMessage();
+    };
+
+    // ===== Enter key =====
+    inputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChatbotMessage();
+    });
+
+} // End of chatbot initialization
