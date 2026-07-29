@@ -22,7 +22,7 @@ const teamMembers = [
     {
         id: 3,
         name: 'مروان سمير جابر',
-        role: 'مسئول وسائل التواصل والتسويق',
+        role: 'مسئول وسائل التواصل والشراكات',
         shortDesc: 'يدير وسائل التواصل الاجتماعي ويسوق للمبادرة.',
         fullBio: 'مروان مسؤول عن إدارة وسائل التواصل الاجتماعي والتسويق للمبادرة، ويعمل على نشر رسائلها ومبادئها بشكل فعال.',
         avatar: 'Marwan.jpeg',
@@ -40,42 +40,27 @@ const teamMembers = [
     {
         id: 5,
         name: 'يوسف محمد العمرى',
-        role: 'مصمم فيديوهات',
-        shortDesc: 'يوسف هو المساعد لنا فى تحويل أفكارنا الى فيديوهات بشكل احترافى.',
-        fullBio: 'يوسف هو المساعد لنا فى تحويل أفكارنا الى فيديوهات بشكل احترافى، ويعمل على تحويل الأفكار إلى محتوى بصري جذاب واحترافي يساهم في توصيل رسائل المبادرة بشكل مؤثر.',
+        role: 'مدير التقنية',
+        shortDesc: 'مطور الويب و المسؤول عن المنصة التقنية',
+        fullBio: 'يوسف مهندس برمجيات محترف، يسخر مهاراته التقنية لتوفير منصة سهلة الاستخدام تخدم أهداف المبادرة وتوصل رسالتها لأكبر شريحة ممكنة.',
         avatar: 'Yousef.jpeg',
         social: { facebook: '#', instagram: '#', linkedin: '#' }
     }
 ];
 
 const volunteerMembers = [
-    {
-        id: 1,
-        name: 'باتريك أسامة',
-        role: 'مسئول عن المتطوعين',
-        shortDesc: 'مهمته توزيع المهام والاحتفاظ على سير المتطوعين بشكل متوازن، بالإضافة إلى تطوير الصفحة الرئيسية للمبادرة.',
-        fullBio: 'باتريك أسامة المسؤول عن المتطوعين الذين يساهمون في تنظيم العمل التطوعي داخل المبادرة. يركز على توزيع المهام بعناية، والحفاظ على انسيابية العمل الجماعي، كما يشارك في تطوير الصفحة الرئيسية للمبادرة لتكون أكثر تأثيراً ومواكبة لاحتياجات الجمهور.',
-        avatar: '657518365_122103158414917687_2018520676206605947_n.jpg',
-        social: { facebook: '#', instagram: '#', linkedin: '#' }
-    },
-    {
-        id: 6,
-        name: 'مينا جرجس',
-        role: 'Developer & Video Editor',
-        shortDesc: 'تطوير الأفكار وتحسين التجربة وتطوير موقع كورسات المبادرة.',
-        fullBio: 'مينا جرجس يساهم في تحويل الأفكار إلى حلول عملية ومحتوى رقمي احترافي. يعمل على تطوير التجربة الرقمية للمبادرة، ويساعد في تحسين موقع الكورسات بحيث يصبح أداة فعالة في نشر الرسائل والمهارات التي تتبناها المبادرة.',
-        avatar: 'mina.jpeg',
-        social: { facebook: '#', instagram: '#', linkedin: '#' }
-    },
-    {
-        id: 7,
-        name: 'جورج نادر',
-        role: 'Game Developer',
-        shortDesc: 'تطوير اللعب بحيث نستطيع إيصال رسالتنا إلى الفئة التي تحب الألعاب الإلكترونية.',
-        fullBio: 'جورج نادر يعمل على تطوير الألعاب كوسيلة مؤثرة لنقل رسائل المبادرة إلى الفئة التي تهتم بالألعاب الإلكترونية. يهدف إلى تصميم تجارب تفاعلية تجمع بين التسلية والوعي، وتساعد على إيصال الأفكار الإيجابية بطريقة ممتعة ومناسبة للجمهور الشبابي.',
-        avatar: 'Goerge nader.jpeg',
-        social: { facebook: '#', instagram: '#', linkedin: '#' }
-    }
+    { id: 1, name: 'باتريك أسامه', role: 'مبرمج' },
+    { id: 2, name: 'محمد طارق', role: 'مبرمج' },
+    { id: 3, name: 'مينا جرجس', role: 'مبرمج' },
+    { id: 4, name: 'جورج نادر', role: 'مبرمج' },
+    { id: 5, name: 'ياسين فرج', role: 'ميديا' },
+    { id: 6, name: 'حمزه محمد', role: 'ميديا' },
+    { id: 7, name: 'فاطمه عمر فتحي', role: 'فوتوغرافر' },
+    { id: 8, name: 'محمد عمر فتحي', role: 'video editor' },
+    { id: 9, name: 'سيف الدين ايهاب مصطفي', role: 'video editor' },
+    { id: 10, name: 'محمد احمد', role: 'مبرمج' },
+    { id: 11, name: 'عبد الرحمن محمد احمد قطب', role: 'مبرمج' },
+    { id: 12, name: 'محمد الكومي', role: 'تنظيم' }
 ];
 
 const blogPosts = [
@@ -235,19 +220,12 @@ function renderVolunteerMembers() {
     if(!container) return;
 
     container.innerHTML = volunteerMembers.map(member => `
-        <a href="profile.html?type=volunteer&id=${member.id}" class="team-card glass">
-            <div class="member-avatar">
-                <img src="${member.avatar}" alt="${member.name}" class="avatar-img">
-            </div>
+        <div class="team-card glass">
             <div class="member-info">
                 <h3>${member.name}</h3>
                 <p class="role">${member.role}</p>
-                <p class="short-desc">${member.shortDesc}</p>
             </div>
-            <div class="view-profile-btn">
-                <span>عرض الملف الشخصي</span>
-            </div>
-        </a>
+        </div>
     `).join('');
 }
 
@@ -271,6 +249,18 @@ function loadProfileData() {
     
     if(!member) {
         container.innerHTML = `<div style="text-align: center; padding: 50px;"><h2>لم يتم العثور على العضو</h2></div>`;
+        return;
+    }
+
+    if (type === 'volunteer') {
+        container.innerHTML = `
+            <div class="profile-header">
+                <div class="profile-title">
+                    <h1>${member.name}</h1>
+                    <p class="profile-role">${member.role}</p>
+                </div>
+            </div>
+        `;
         return;
     }
 
