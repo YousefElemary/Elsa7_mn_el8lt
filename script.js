@@ -216,17 +216,49 @@ function renderTeamMembers() {
 }
 
 function renderVolunteerMembers() {
-    const container = document.getElementById('volunteer-container');
-    if(!container) return;
+    const pitch = document.getElementById('volunteer-container');
+    const managerContainer = document.getElementById('manager-container');
+    if(!pitch) return;
 
-    container.innerHTML = volunteerMembers.map(member => `
-        <div class="team-card glass">
-            <div class="member-info">
-                <h3>${member.name}</h3>
-                <p class="role">${member.role}</p>
-            </div>
+    const gk = volunteerMembers.filter(m => m.role === 'فوتوغرافر');
+    const def = volunteerMembers.filter(m => m.role === 'مبرمج');
+    const mid = volunteerMembers.filter(m => m.role === 'video editor');
+    const fwd = volunteerMembers.filter(m => m.role === 'ميديا');
+    const manager = volunteerMembers.filter(m => m.role === 'تنظيم');
+
+    let n = 1;
+    [...gk, ...def, ...mid, ...fwd].forEach(m => { m.number = n++; });
+
+    const renderRow = (players, cls) => `
+        <div class="pitch-row ${cls}">
+            ${players.map(p => `
+                <div class="player">
+                    <div class="player-jersey">${p.number}</div>
+                    <div class="player-name">${p.name}</div>
+                    <div class="player-role">${p.role}</div>
+                </div>
+            `).join('')}
         </div>
-    `).join('');
+    `;
+
+    pitch.innerHTML = `
+        ${renderRow(fwd, 'row-fwd')}
+        ${renderRow(mid, 'row-mid')}
+        ${renderRow(def, 'row-def')}
+        ${renderRow(gk, 'row-gk')}
+    `;
+
+    if (managerContainer) {
+        managerContainer.innerHTML = manager.map(m => `
+            <div class="manager-card">
+                <div class="manager-jersey">👔</div>
+                <div>
+                    <div class="player-name">${m.name}</div>
+                    <div class="player-role">المدير الفني</div>
+                </div>
+            </div>
+        `).join('');
+    }
 }
 
 // --- Dynamic Page Loaders ---
@@ -298,7 +330,6 @@ function loadProfileData() {
 // ================================================================
 
 // Configuration
-const CHATBOT_API_KEY = "gsk_1Z2woO8pC84akFAcn1utWGdyb3FYoURwnwphOTxALdjuktRFLuek";
 const CHATBOT_MODEL = "llama-3.1-8b-instant";
 
 // Knowledge Base
@@ -450,10 +481,9 @@ if (toggleBtn && chatWindow && closeBtn && messagesContainer && inputField) {
             const historyToSend = chatHistory.slice(-10);
             messages.push(...historyToSend);
 
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${CHATBOT_API_KEY}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
