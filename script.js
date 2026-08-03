@@ -448,7 +448,7 @@ if (toggleBtn && chatWindow && closeBtn && messagesContainer && inputField) {
     }
 
     // ===== Send Message (WITH CONVERSATION MEMORY) =====
-    async function sendChatbotMessage() {
+    window.sendChatbotMessage = async function() {
         const question = inputField.value.trim();
         if (!question) return;
 
