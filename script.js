@@ -360,7 +360,8 @@ const CHATBOT_KNOWLEDGE = `
     - مسئول وسائل التواصل والتسويق: مروان سمير جابر.
     - مسؤولة الإعلام: أسماء أشرف عبدالفتاح خليل.
     - مصمم الفيديوهات: يوسف محمد العمرى.
-    - مبرمج الشات بوت: محمد أحمد إبراهيم.
+    - من صنع/برمج هذا الشات بوت والموقع؟ فريق البرمجة بقيادة يوسف العمري.
+    - من هو فريق المبادرة؟ فريق متكامل يضم مؤسس المبادرة، منسقة المحتوى، فريق التواصل والإعلام، وفريق البرمجة بقيادة يوسف العمري (اذكر الأسماء كلها لو سُئلت بالتفصيل، ولا تقتصر على اسم واحد فقط).
 
     🤝 **التطوع والمتطوعون**
     - كيف يمكن التطوع؟ عبر تعبئة الاستمارة الإلكترونية.
@@ -488,7 +489,7 @@ if (toggleBtn && chatWindow && closeBtn && messagesContainer && inputField) {
                     
                     أنت تجري محادثة طبيعية مع المستخدم. تذكر ما قاله المستخدم سابقاً واستخدم السياق للإجابة.
                     
-                    استخدم المعلومات التالية بدقة للإجابة. يمكنك أيضاً الإجابة عن أي أسئلة تتعلق بالاستخدام الصح والغلط للذكاء الاصطناعي (مثل: كيفية التحقق من المعلومات، مخاطر الاعتماد الكامل على الذكاء الاصطناعي، الاستخدام الأخلاقي له في الدراسة والعمل، الخصوصية، والتحيز في نتائجه)، لأن هذا الموضوع مرتبط مباشرة برسالة المبادرة. إذا كان السؤال خارج هذين النطاقين، قل: "عذراً، هذا السؤال خارج نطاق المبادرة. يرجى التواصل مع فريق التطوير." 
+                    استخدم المعلومات التالية بدقة للإجابة. يمكنك أيضاً الإجابة عن أي أسئلة تتعلق بالاستخدام الصح والغلط للذكاء الاصطناعي (مثل: كيفية التحقق من المعلومات، مخاطر الاعتماد الكامل على الذكاء الاصطناعي، الاستخدام الأخلاقي له في الدراسة والعمل، الخصوصية، والتحيز في نتائجه)، لأن هذا الموضوع مرتبط مباشرة برسالة المبادرة. إذا كان السؤال خارج هذين النطاقين، قل: "هذا خارج محتوى المبادرة. في حالة الخطأ، يرجى التواصل مع فريق المبادرة." 
                     
                     كن موجزاً ومفيداً، واستخدم النقاط عندما يكون ذلك مناسباً.
                     استخدم العربية الفصحى أو العامية المصرية حسب ما يناسب السياق.
@@ -523,7 +524,7 @@ if (toggleBtn && chatWindow && closeBtn && messagesContainer && inputField) {
 
         } catch (error) {
             hideTyping();
-            addChatbotMessage("⚠️ حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.", false);
+            addChatbotMessage("هذا خارج محتوى المبادرة. في حالة الخطأ، يرجى التواصل مع فريق المبادرة.", false);
             console.error(error);
         }
     }
@@ -645,52 +646,3 @@ window.submitQuiz = function() {
     `;
 };
 
-// ===== "صح ولا غلط؟" AI Usage Scenario Tool =====
-window.checkAiScenario = async function() {
-    const input = document.getElementById('aiToolInput');
-    const resultEl = document.getElementById('aiToolResult');
-    const btn = document.getElementById('aiToolBtn');
-    if (!input || !resultEl) return;
-
-    const scenario = input.value.trim();
-    if (!scenario) {
-        resultEl.style.display = 'block';
-        resultEl.innerHTML = `<p class="ai-tool-warning">⚠️ اكتب الموقف الأول.</p>`;
-        return;
-    }
-
-    resultEl.style.display = 'block';
-    resultEl.innerHTML = `<p class="ai-tool-loading">⏳ بنفكر...</p>`;
-    btn.disabled = true;
-
-    try {
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: typeof CHATBOT_MODEL !== 'undefined' ? CHATBOT_MODEL : "llama-3.1-8b-instant",
-                messages: [
-                    {
-                        role: "system",
-                        content: `أنت جزء من مبادرة "الصح من الغلط" لنشر الوعي بالاستخدام الصحيح للذكاء الاصطناعي. المستخدم هيديك موقف استخدم فيه الذكاء الاصطناعي، ومطلوب منك:
-1. تبدأ إجابتك بكلمة "✅ صح" أو "⚠️ محتاج انتباه" بس - بدون أي كلام تاني قبلها.
-2. بعدها سطر جديد فيه تفسير قصير جداً (سطرين كحد أقصى) بالعامية المصرية البسيطة يوضح السبب.
-3. خليك موضوعي ومتوازن، ومتفتيش قدام لجنة تحكيم أو جمهور عام - يعني اللغة لازم تكون بسيطة ومحترمة.`
-                    },
-                    { role: "user", content: scenario }
-                ],
-                temperature: 0.3,
-                max_tokens: 300
-            })
-        });
-
-        const data = await response.json();
-        const answer = data.choices[0].message.content;
-        resultEl.innerHTML = `<p class="ai-tool-answer">${answer.replace(/\n/g, '<br>')}</p>`;
-    } catch (error) {
-        resultEl.innerHTML = `<p class="ai-tool-warning">⚠️ حدث خطأ في الاتصال. حاول تاني.</p>`;
-        console.error(error);
-    } finally {
-        btn.disabled = false;
-    }
-};

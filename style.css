@@ -1332,79 +1332,18 @@ a { text-decoration: none; color: inherit; }
   .pitch-row { gap: 10px; }
 }
 
-/* ===== AI AWARENESS PAGE: "صح ولا غلط؟" TOOL ===== */
-.ai-tool-section, .quiz-section, .image-awareness-section {
+/* ===== AI AWARENESS PAGE ===== */
+.quiz-section, .image-awareness-section {
   margin-bottom: 20px;
 }
 
-.ai-tool-card, .quiz-card {
+.quiz-card {
   max-width: 700px;
   margin: 0 auto;
   text-align: center;
 }
 
-.ai-tool-card h3 {
-  font-size: 1.4rem;
-  margin-bottom: 10px;
-}
-
-.ai-tool-input-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-  flex-wrap: wrap;
-}
-
-.ai-tool-input-row input {
-  flex: 1;
-  min-width: 200px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-main);
-  font-family: var(--font-arabic);
-  font-size: 0.95rem;
-}
-
-.ai-tool-input-row input:focus {
-  outline: none;
-  border-color: var(--accent-gold);
-}
-
-.ai-tool-input-row button {
-  padding: 12px 24px;
-  border-radius: 10px;
-  border: none;
-  background: var(--accent-gold);
-  color: #1a1a1a;
-  font-weight: 700;
-  font-family: var(--font-arabic);
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.ai-tool-input-row button:hover {
-  box-shadow: 0 0 15px var(--glow-gold);
-}
-
-.ai-tool-input-row button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.ai-tool-result {
-  margin-top: 20px;
-  padding: 16px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--glass-border);
-  text-align: right;
-}
-
-.ai-tool-answer { line-height: 1.8; }
-.ai-tool-warning, .quiz-warning { color: #ff8080; }
-.ai-tool-loading { color: var(--text-muted); }
+.quiz-warning { color: #ff8080; }
 
 /* Quiz */
 .quiz-question {
@@ -1503,6 +1442,4 @@ a { text-decoration: none; color: inherit; }
   color: #1a1a1a;
 }
 
-@media (max-width: 600px) {
-  .ai-tool-input-row { flex-direction: column; }
-}
+
