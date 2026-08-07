@@ -60,7 +60,8 @@ const volunteerMembers = [
     { id: 9, name: 'سيف الدين ايهاب مصطفي', role: 'video editor' },
     { id: 10, name: 'محمد احمد', role: 'مبرمج' },
     { id: 11, name: 'عبد الرحمن محمد احمد قطب', role: 'مبرمج' },
-    { id: 12, name: 'محمد الكومي', role: 'تنظيم' }
+    { id: 12, name: 'محمد الكومي', role: 'تنظيم' },
+    { id: 13, name: 'مروة عبد الناصر', role: 'رئيسة النادي' }
 ];
 
 const blogPosts = [
@@ -169,6 +170,7 @@ const observer = new IntersectionObserver((entries, observer) => {
 document.addEventListener('DOMContentLoaded', () => {
     renderTeamMembers();
     renderVolunteerMembers();
+    renderQuiz();
 
     const slideElements = document.querySelectorAll('.slide-up, .about-card, .team-card');
     slideElements.forEach(el => {
@@ -225,6 +227,7 @@ function renderVolunteerMembers() {
     const mid = volunteerMembers.filter(m => m.role === 'video editor');
     const fwd = volunteerMembers.filter(m => m.role === 'ميديا');
     const manager = volunteerMembers.filter(m => m.role === 'تنظيم');
+    const president = volunteerMembers.filter(m => m.role === 'رئيسة النادي');
 
     let n = 1;
     [...gk, ...def, ...mid, ...fwd].forEach(m => { m.number = n++; });
@@ -249,15 +252,26 @@ function renderVolunteerMembers() {
     `;
 
     if (managerContainer) {
-        managerContainer.innerHTML = manager.map(m => `
-            <div class="manager-card">
-                <div class="manager-jersey">👔</div>
-                <div>
-                    <div class="player-name">${m.name}</div>
-                    <div class="player-role">المدير الفني</div>
+        managerContainer.innerHTML = `
+            ${president.map(m => `
+                <div class="manager-card president-card">
+                    <div class="manager-jersey">🏆</div>
+                    <div>
+                        <div class="player-name">${m.name}</div>
+                        <div class="player-role">رئيسة النادي</div>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('')}
+            ${manager.map(m => `
+                <div class="manager-card">
+                    <div class="manager-jersey">👔</div>
+                    <div>
+                        <div class="player-name">${m.name}</div>
+                        <div class="player-role">المدير الفني</div>
+                    </div>
+                </div>
+            `).join('')}
+        `;
     }
 }
 
@@ -526,3 +540,157 @@ if (toggleBtn && chatWindow && closeBtn && messagesContainer && inputField) {
     });
 
 } // End of chatbot initialization
+// ===== AI Awareness Quiz =====
+const quizQuestionPool = [
+    { q: "تسليم بحث كتبه الذكاء الاصطناعي بالكامل باسمك من غير قراءة أو فهم", correct: false },
+    { q: "استخدام الذكاء الاصطناعي عشان تفهم موضوع صعب وتراجع بيه بنفسك", correct: true },
+    { q: "تصديق أي معلومة يقولها شات بوت من غير التأكد منها من مصدر موثوق", correct: false },
+    { q: "مشاركة بيانات شخصية حساسة (زي رقم بطاقة أو عنوانك) مع أدوات الذكاء الاصطناعي", correct: false },
+    { q: "استخدام الذكاء الاصطناعي كنقطة بداية للأفكار، ثم تطويرها وتدقيقها بنفسك", correct: true },
+    { q: "سؤال الذكاء الاصطناعي عن معلومة طبية واتخاذ قرار علاجي بناءً عليها بدون استشارة طبيب", correct: false },
+    { q: "استخدام الذكاء الاصطناعي لتلخيص مقال طويل عشان توفر وقتك في المذاكرة", correct: true },
+    { q: "الاعتماد على الذكاء الاصطناعي في كل قرار حياتي صغير وكبير بدون تفكير شخصي", correct: false },
+    { q: "مراجعة الكود اللي كتبه الذكاء الاصطناعي والتأكد إنه شغال صح قبل استخدامه", correct: true },
+    { q: "نشر صورة أو فيديو مصنوع بالذكاء الاصطناعي على إنه حقيقي من غير توضيح", correct: false },
+    { q: "استخدام الذكاء الاصطناعي عشان تتدرب على مقابلة شغل وتحسن إجاباتك", correct: true },
+    { q: "افتراض إن كل إجابة من الذكاء الاصطناعي دقيقة 100% ومفيهاش أخطاء", correct: false },
+    { q: "سؤال الذكاء الاصطناعي عن رأيه في موضوع حساس والتعامل مع رده كحقيقة نهائية", correct: false },
+    { q: "استخدام أدوات الذكاء الاصطناعي للترجمة كمساعدة، مع مراجعة الترجمة بنفسك", correct: true },
+    { q: "كتابة برومبت يطلب من الذكاء الاصطناعي معلومات شخصية عن شخص تاني بدون إذنه", correct: false },
+    { q: "استخدام الذكاء الاصطناعي عشان تولد أفكار لمشروع، وبعدين تختار وتطور الأنسب منها", correct: true },
+    { q: "الاعتقاد إن كل صورة أو فيديو تشوفه أونلاين حقيقي 100% ومفيهوش تلاعب", correct: false },
+    { q: "مراجعة سياسة الخصوصية لأي أداة ذكاء اصطناعي قبل ما تدخل بياناتك فيها", correct: true },
+    { q: "استخدام الذكاء الاصطناعي في حل امتحان أونلاين بدل ما تذاكر", correct: false },
+    { q: "سؤال الذكاء الاصطناعي يشرحلك مفهوم صعب بطريقة مبسطة كخطوة أولى، وبعدين تدور على مصادر تانية", correct: true },
+    { q: "اعتبار إن الذكاء الاصطناعي مش بيتحيز أبداً لأنه \"مجرد برنامج\"", correct: false },
+    { q: "التأكد من مصدر أي معلومة حساسة (طبية، قانونية، مالية) قبل التصرف بناءً عليها حتى لو جاتلك من الذكاء الاصطناعي", correct: true },
+    { q: "استخدام أداة ذكاء اصطناعي لتوليد صور لشخص حقيقي في مواقف ملفقة بدون إذنه", correct: false },
+    { q: "سؤال الذكاء الاصطناعي عن مصادر إضافية للتعمق في موضوع بتذاكره", correct: true },
+    { q: "اعتبار ملاحظات الذكاء الاصطناعي على شغلك بديل كامل عن رأي معلم أو مدرب حقيقي", correct: false },
+    { q: "استخدام الذكاء الاصطناعي في العصف الذهني قبل الاجتماعات أو المشاريع", correct: true },
+    { q: "تصديق إن الذكاء الاصطناعي \"يفكر ويحس\" زي الإنسان بالظبط", correct: false },
+    { q: "توضيح للقارئ لما تستخدم محتوى ولّده الذكاء الاصطناعي في عمل بتنشره", correct: true },
+    { q: "استخدام نفس إجابة الذكاء الاصطناعي في أكتر من مكان (بحث، تقرير، بوست) من غير أي تعديل", correct: false },
+    { q: "تعلم أساسيات إزاي الذكاء الاصطناعي بيشتغل عشان تفهم حدوده ومميزاته", correct: true }
+];
+
+const QUIZ_LENGTH = 10;
+let currentQuizQuestions = [];
+let quizAnswers = [];
+
+function shuffleArray(arr) {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+}
+
+function renderQuiz() {
+    const container = document.getElementById('quizContainer');
+    if (!container) return;
+
+    currentQuizQuestions = shuffleArray(quizQuestionPool).slice(0, QUIZ_LENGTH);
+    quizAnswers = new Array(currentQuizQuestions.length).fill(null);
+
+    const resultEl = document.getElementById('quizResult');
+    if (resultEl) resultEl.style.display = 'none';
+
+    container.innerHTML = currentQuizQuestions.map((item, i) => `
+        <div class="quiz-question" data-index="${i}">
+            <p class="quiz-q-text">${i + 1}. ${item.q}</p>
+            <div class="quiz-options">
+                <button type="button" class="quiz-option" onclick="selectQuizAnswer(${i}, true, this)">صح</button>
+                <button type="button" class="quiz-option" onclick="selectQuizAnswer(${i}, false, this)">غلط</button>
+            </div>
+        </div>
+    `).join('') + `<button type="button" class="quiz-submit-btn" onclick="submitQuiz()">اعرف نتيجتك</button>`;
+}
+
+window.selectQuizAnswer = function(index, value, btn) {
+    quizAnswers[index] = value;
+    const options = btn.parentElement.querySelectorAll('.quiz-option');
+    options.forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+};
+
+window.submitQuiz = function() {
+    const resultEl = document.getElementById('quizResult');
+    if (!resultEl) return;
+
+    if (quizAnswers.includes(null)) {
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `<p class="quiz-warning">⚠️ جاوب على كل الأسئلة الأول عشان تعرف نتيجتك.</p>`;
+        return;
+    }
+
+    let score = 0;
+    currentQuizQuestions.forEach((item, i) => { if (quizAnswers[i] === item.correct) score++; });
+
+    let message;
+    if (score === currentQuizQuestions.length) {
+        message = "ممتاز! وعيك بالاستخدام الصح للذكاء الاصطناعي عالي جداً 🌟";
+    } else if (score >= currentQuizQuestions.length * 0.6) {
+        message = "وعيك كويس، بس لسه فيه نقط تستاهل انتباه أكتر 👍";
+    } else {
+        message = "وعيك محتاج شوية تطوير — راجع النصائح اللي فوق وجرب تاني 💡";
+    }
+
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = `
+        <p class="quiz-score">نتيجتك: ${score} / ${currentQuizQuestions.length}</p>
+        <p class="quiz-message">${message}</p>
+        <button type="button" class="quiz-retry-btn" onclick="renderQuiz()">جرب أسئلة تانية 🔄</button>
+    `;
+};
+
+// ===== "صح ولا غلط؟" AI Usage Scenario Tool =====
+window.checkAiScenario = async function() {
+    const input = document.getElementById('aiToolInput');
+    const resultEl = document.getElementById('aiToolResult');
+    const btn = document.getElementById('aiToolBtn');
+    if (!input || !resultEl) return;
+
+    const scenario = input.value.trim();
+    if (!scenario) {
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `<p class="ai-tool-warning">⚠️ اكتب الموقف الأول.</p>`;
+        return;
+    }
+
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = `<p class="ai-tool-loading">⏳ بنفكر...</p>`;
+    btn.disabled = true;
+
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: typeof CHATBOT_MODEL !== 'undefined' ? CHATBOT_MODEL : "llama-3.1-8b-instant",
+                messages: [
+                    {
+                        role: "system",
+                        content: `أنت جزء من مبادرة "الصح من الغلط" لنشر الوعي بالاستخدام الصحيح للذكاء الاصطناعي. المستخدم هيديك موقف استخدم فيه الذكاء الاصطناعي، ومطلوب منك:
+1. تبدأ إجابتك بكلمة "✅ صح" أو "⚠️ محتاج انتباه" بس - بدون أي كلام تاني قبلها.
+2. بعدها سطر جديد فيه تفسير قصير جداً (سطرين كحد أقصى) بالعامية المصرية البسيطة يوضح السبب.
+3. خليك موضوعي ومتوازن، ومتفتيش قدام لجنة تحكيم أو جمهور عام - يعني اللغة لازم تكون بسيطة ومحترمة.`
+                    },
+                    { role: "user", content: scenario }
+                ],
+                temperature: 0.3,
+                max_tokens: 300
+            })
+        });
+
+        const data = await response.json();
+        const answer = data.choices[0].message.content;
+        resultEl.innerHTML = `<p class="ai-tool-answer">${answer.replace(/\n/g, '<br>')}</p>`;
+    } catch (error) {
+        resultEl.innerHTML = `<p class="ai-tool-warning">⚠️ حدث خطأ في الاتصال. حاول تاني.</p>`;
+        console.error(error);
+    } finally {
+        btn.disabled = false;
+    }
+};

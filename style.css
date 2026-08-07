@@ -1268,6 +1268,21 @@ a { text-decoration: none; color: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.president-card {
+  border-color: var(--accent-blue);
+  background: rgba(0, 240, 255, 0.06);
+}
+
+.president-card .manager-jersey {
+  border-color: var(--accent-gold);
+}
+
+.president-card .player-role {
+  color: var(--accent-blue);
 }
 
 .manager-card {
@@ -1315,4 +1330,179 @@ a { text-decoration: none; color: inherit; }
   .player-name { font-size: 0.68rem; }
   .player-role { font-size: 0.6rem; }
   .pitch-row { gap: 10px; }
+}
+
+/* ===== AI AWARENESS PAGE: "صح ولا غلط؟" TOOL ===== */
+.ai-tool-section, .quiz-section, .image-awareness-section {
+  margin-bottom: 20px;
+}
+
+.ai-tool-card, .quiz-card {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ai-tool-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.ai-tool-input-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.ai-tool-input-row input {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  font-family: var(--font-arabic);
+  font-size: 0.95rem;
+}
+
+.ai-tool-input-row input:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.ai-tool-input-row button {
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent-gold);
+  color: #1a1a1a;
+  font-weight: 700;
+  font-family: var(--font-arabic);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.ai-tool-input-row button:hover {
+  box-shadow: 0 0 15px var(--glow-gold);
+}
+
+.ai-tool-input-row button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-tool-result {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  text-align: right;
+}
+
+.ai-tool-answer { line-height: 1.8; }
+.ai-tool-warning, .quiz-warning { color: #ff8080; }
+.ai-tool-loading { color: var(--text-muted); }
+
+/* Quiz */
+.quiz-question {
+  text-align: right;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.quiz-question:last-of-type {
+  border-bottom: none;
+}
+
+.quiz-q-text {
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.quiz-options {
+  display: flex;
+  gap: 10px;
+}
+
+.quiz-option {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-main);
+  font-family: var(--font-arabic);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.quiz-option:hover {
+  border-color: var(--accent-gold);
+}
+
+.quiz-option.selected {
+  background: var(--accent-gold);
+  color: #1a1a1a;
+  border-color: var(--accent-gold);
+}
+
+.quiz-submit-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent-blue);
+  color: #0a0a0c;
+  font-weight: 800;
+  font-family: var(--font-arabic);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.quiz-submit-btn:hover {
+  box-shadow: 0 0 18px var(--glow-blue);
+}
+
+.quiz-result {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.quiz-score {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent-gold);
+}
+
+.quiz-message {
+  margin-top: 8px;
+  color: var(--text-muted);
+}
+
+.quiz-retry-btn {
+  margin-top: 16px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: 1px solid var(--accent-gold);
+  background: transparent;
+  color: var(--accent-gold);
+  font-family: var(--font-arabic);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.quiz-retry-btn:hover {
+  background: var(--accent-gold);
+  color: #1a1a1a;
+}
+
+@media (max-width: 600px) {
+  .ai-tool-input-row { flex-direction: column; }
 }
