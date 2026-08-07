@@ -9,6 +9,39 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .partners-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        @media (max-width: 768px) {
+            .partners-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+            }
+            .partners-grid .team-card {
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 8px !important;
+                padding: 15px 8px !important;
+                margin-top: 0 !important;
+            }
+            .partners-grid .team-card .member-avatar {
+                margin: 0 auto !important;
+            }
+            .partners-grid .team-card .member-info {
+                text-align: center !important;
+            }
+            .partners-grid .team-card .member-info h3 {
+                font-size: 0.8rem !important;
+                line-height: 1.3 !important;
+            }
+        }
+    </style>
 </head>
 <body class=
 "volunteer-page-body">
@@ -52,6 +85,7 @@
                 </div>
 
                 <div class="volunteer-card glass">
+                <div class="partners-grid">
                     <div class="team-card" style="justify-content: flex-start; gap: 25px;">
                         <div class="member-avatar" style="margin-left: 0; margin-right: 30px;">
                             <img src="302441633_523741739754067_626183415748814398_n.png" alt="أكاديمية سياج" class="avatar-img">
@@ -272,7 +306,7 @@
                             <h3>جمعية ابناء دنفيق</h3>
                         </div>
                     </div>
-
+                </div>
 
                     <a href="https://forms.gle/zBfHjJ981Xfo7Z52A" class="cta-btn" target="_blank" rel="noopener noreferrer">هل تريد أن تقوم معنا بشراكة؟</a>
                 </div>

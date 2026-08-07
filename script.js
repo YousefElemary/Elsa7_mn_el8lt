@@ -379,6 +379,11 @@ const CHATBOT_KNOWLEDGE = `
     - Elements of AI: كورس عالمي مجاني من جامعة هلسنكي، بشهادة مجانية بالكامل، لفهم أساسيات الذكاء الاصطناعي بدون أي خلفية تقنية.
     - لو سُئلت "ما هي الكورسات التي تقدمها المبادرة؟" اذكر الأربعة كلهم بإيجاز (الأساسي + الثلاثة الخارجيين).
 
+    🎓 **شهادة إتمام الكورسات**
+    - بعد ما المستخدم يخلص كل الكورسات الموجودة في صفحة "كورساتنا"، يقدر ياخد شهادة إتمام رسمية من مبادرة الصح من الغلط.
+    - رابط الحصول على الشهادة موجود في أسفل صفحة "كورساتنا" مباشرة بعد قائمة الكورسات، وهو: https://docs.google.com/forms/d/e/1FAIpQLSdqZgwM9BqEWdlRiEGh7geeDP_wp_FApUKOyhkNTIfL8ASp1A/viewform?usp=header
+    - لو حد سأل "إزاي آخد شهادة" أو "فيه شهادة على إتمام الكورسات؟" وضّح إن الرابط موجود في نهاية صفحة الكورسات، وابعتلوه نفس الرابط.
+
     📝 **مقالات المدونة**
     - "كيف نميز بين الأخبار الحقيقية والمزيفة؟" - عن أهمية التحقق من المصادر ومواجهة التضليل.
     - "التنمر الإلكتروني: أسبابه وكيفية مواجهته" - عن ظاهرة التنمر الإلكتروني وطرق المواجهة.
@@ -501,7 +506,7 @@ if (toggleBtn && chatWindow && closeBtn && messagesContainer && inputField) {
                     
                     أنت تجري محادثة طبيعية مع المستخدم. تذكر ما قاله المستخدم سابقاً واستخدم السياق للإجابة.
                     
-                    أنت تجاوب فقط عن نطاقين: (1) أي معلومة موجودة في القسم "المعلومات" تحت، وهو يغطي كل محتوى الموقع (المبادرة، الفريق، المتطوعين، الشراكات، الكورسات، المدونة، صفحة الوعي بالذكاء الاصطناعي، وسائل التواصل)، و(2) أي سؤال عن الاستخدام الصح والغلط للذكاء الاصطناعي بشكل عام (مثل: كيفية التحقق من المعلومات، مخاطر الاعتماد الكامل على الذكاء الاصطناعي، الاستخدام الأخلاقي له في الدراسة والعمل، الخصوصية، والتحيز في نتائجه)، حتى لو مش مكتوب حرفياً في القسم "المعلومات". لا تعتبر أي سؤال عن الكورسات أو المدونة أو الفريق أو المتطوعين "خارج النطاق" - كل ده جزء أساسي من الموقع. فقط لو كان السؤال عن موضوع مختلف تماماً (زي الطقس، الرياضة العامة، سياسة، إلخ)، قل: "هذا خارج محتوى المبادرة. في حالة الخطأ، يرجى التواصل مع فريق المبادرة." 
+                    أنت تجاوب عن ثلاثة نطاقين: (1) أي معلومة موجودة في القسم "المعلومات" تحت، وهو يغطي كل محتوى الموقع (المبادرة، الفريق، المتطوعين، الشراكات، الكورسات، شهادة إتمام الكورسات، المدونة، صفحة الوعي بالذكاء الاصطناعي، وسائل التواصل)، (2) أي سؤال عن الاستخدام الصح والغلط للذكاء الاصطناعي بشكل عام (مثل: كيفية التحقق من المعلومات، مخاطر الاعتماد الكامل على الذكاء الاصطناعي، الاستخدام الأخلاقي له في الدراسة والعمل، الخصوصية، والتحيز في نتائجه)، و(3) أي سؤال له علاقة بالتكنولوجيا بشكل عام (برمجة، أجهزة، إنترنت، تطبيقات، أمن سيبراني، مواقع، هواتف، إلخ)، حتى لو مش مكتوب حرفياً في القسم "المعلومات" - جاوب عليه بمعلوماتك العامة بشكل مبسط ومفيد ومختصر. لا تعتبر أي سؤال عن الكورسات أو المدونة أو الفريق أو المتطوعين أو الشهادة "خارج النطاق" - كل ده جزء أساسي من الموقع. فقط لو كان السؤال عن موضوع مختلف تماماً ومالوش علاقة بالتكنولوجيا أو المبادرة (زي الطقس، الرياضة العامة، سياسة، إلخ)، قل: "هذا خارج محتوى المبادرة. في حالة الخطأ، يرجى التواصل مع فريق المبادرة." 
                     
                     كن موجزاً ومفيداً، واستخدم النقاط عندما يكون ذلك مناسباً.
                     استخدم العربية الفصحى أو العامية المصرية حسب ما يناسب السياق.
@@ -663,4 +668,83 @@ window.submitQuiz = function() {
         <button type="button" class="quiz-retry-btn" onclick="renderQuiz()">جرب أسئلة تانية 🔄</button>
     `;
 };
+
+// ================================================================
+// ===== Courses Certificate Progress =====
+// ================================================================
+(function() {
+    const courseCheckboxes = document.querySelectorAll('.course-checkbox');
+    if (!courseCheckboxes.length) return;
+
+    const certificateLink = document.getElementById('certificateLink');
+    const progressText = document.getElementById('certificateProgress');
+    const STORAGE_KEY = 'completedCourses';
+
+    function getSavedProgress() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveProgress(data) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) { /* ignore storage errors */ }
+    }
+
+    function updateUI() {
+        const total = courseCheckboxes.length;
+        const completed = Array.from(courseCheckboxes).filter(cb => cb.checked).length;
+
+        if (progressText) {
+            progressText.textContent = completed === total
+                ? `أنجزت كل الكورسات (${completed}/${total}) 🎉 تقدر دلوقتي تاخد شهادتك`
+                : `أنجزت ${completed} من ${total} كورسات`;
+        }
+
+        if (certificateLink) {
+            if (completed === total) {
+                certificateLink.classList.remove('disabled');
+                certificateLink.setAttribute('aria-disabled', 'false');
+            } else {
+                certificateLink.classList.add('disabled');
+                certificateLink.setAttribute('aria-disabled', 'true');
+            }
+        }
+    }
+
+    // Load saved state from previous visits
+    const saved = getSavedProgress();
+    courseCheckboxes.forEach(cb => {
+        const id = cb.dataset.courseId;
+        if (saved[id]) cb.checked = true;
+    });
+    updateUI();
+
+    // Update on every checkbox toggle
+    courseCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            const data = getSavedProgress();
+            data[cb.dataset.courseId] = cb.checked;
+            saveProgress(data);
+            updateUI();
+        });
+    });
+
+    // Safety net: block navigation if still disabled, with a shake hint
+    if (certificateLink) {
+        certificateLink.addEventListener('click', (e) => {
+            if (certificateLink.classList.contains('disabled')) {
+                e.preventDefault();
+                if (progressText) {
+                    progressText.classList.remove('shake');
+                    void progressText.offsetWidth; // restart animation
+                    progressText.classList.add('shake');
+                }
+            }
+        });
+    }
+})();
 
