@@ -64,6 +64,25 @@ const volunteerMembers = [
     { id: 13, name: 'مروة عبد الناصر', role: 'رئيسة النادي' }
 ];
 
+// دكة البدلاء - موزعين على لجان بشكل عشوائي، وآخر 4 في لجنة البرمجة
+const benchVolunteers = [
+    { id: 101, name: 'سيف الدين احمد', committee: 'الميديا' },
+    { id: 102, name: 'عبدالرحمن رشدي', committee: 'التصوير الفوتوغرافي' },
+    { id: 103, name: 'مروان وليد', committee: 'التنظيم' },
+    { id: 104, name: 'احمد زيكا', committee: 'مونتاج الفيديو' },
+    { id: 105, name: 'عبدالله مصطفي', committee: 'الميديا' },
+    { id: 106, name: 'سلمي رضا', committee: 'التصوير الفوتوغرافي' },
+    { id: 107, name: 'مريم سمير', committee: 'التنظيم' },
+    { id: 108, name: 'شمس محمد', committee: 'مونتاج الفيديو' },
+    { id: 109, name: 'رؤي البنداري', committee: 'الميديا' },
+    { id: 110, name: 'مي جمال', committee: 'التصوير الفوتوغرافي' },
+    { id: 111, name: 'مريم وائل', committee: 'التنظيم' },
+    { id: 112, name: 'ابراهيم يحيي', committee: 'البرمجة' },
+    { id: 113, name: 'هادي احمد', committee: 'البرمجة' },
+    { id: 114, name: 'مصطفي محسن', committee: 'البرمجة' },
+    { id: 115, name: 'عبد الرحمن حامد', committee: 'البرمجة' }
+];
+
 const blogPosts = [
     {
         id: 1, title: 'كيف نميز بين الأخبار الحقيقية والمزيفة؟',
@@ -170,6 +189,7 @@ const observer = new IntersectionObserver((entries, observer) => {
 document.addEventListener('DOMContentLoaded', () => {
     renderTeamMembers();
     renderVolunteerMembers();
+    renderBenchVolunteers();
     renderQuiz();
 
     const slideElements = document.querySelectorAll('.slide-up, .about-card, .team-card');
@@ -273,6 +293,30 @@ function renderVolunteerMembers() {
             `).join('')}
         `;
     }
+}
+
+function renderBenchVolunteers() {
+    const container = document.getElementById('bench-container');
+    if(!container) return;
+
+    // Jersey numbers continue right after the starting XI on the pitch
+    const startingXICount = volunteerMembers.filter(m =>
+        ['فوتوغرافر', 'مبرمج', 'video editor', 'ميديا'].includes(m.role)
+    ).length;
+
+    benchVolunteers.forEach((m, idx) => { m.number = startingXICount + idx + 1; });
+
+    container.innerHTML = `
+        <div class="bench-row">
+            ${benchVolunteers.map(m => `
+                <div class="sub-player">
+                    <div class="sub-player-jersey">${m.number}</div>
+                    <div class="sub-player-name">${m.name}</div>
+                    <div class="sub-player-role">لجنة ${m.committee}</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 // --- Dynamic Page Loaders ---
