@@ -388,7 +388,7 @@ function loadProfileData() {
 // ================================================================
 
 // Configuration
-const CHATBOT_MODEL = "llama-3.1-8b-instant";
+const CHATBOT_MODEL = "openai/gpt-oss-20b";
 
 // Knowledge Base
 const CHATBOT_KNOWLEDGE = `
@@ -791,4 +791,3 @@ window.submitQuiz = function() {
         });
     }
 })();
-
