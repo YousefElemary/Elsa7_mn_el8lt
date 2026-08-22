@@ -22,7 +22,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: model || 'llama-3.1-8b-instant',
+        model: model || 'openai/gpt-oss-20b',
         messages,
         temperature: temperature ?? 0.3,
         max_tokens: max_tokens ?? 900
