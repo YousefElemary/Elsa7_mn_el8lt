@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>خط الزمن | الصح من الغلط</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#12151b; --line:#242832;
+    --ink:#eef1f6; --dim:#8b93a3;
+    --signal:#31d0aa; --noise:#ff3b5c; --scan:#00d4ff; --warn:#ffb020;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Tajawal',sans-serif; min-height:100vh; position:relative;}
+  body::before{content:""; position:fixed; inset:0; background:repeating-linear-gradient(180deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px); pointer-events:none; z-index:1;}
+  .app{position:relative; z-index:2; max-width:640px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding:28px 20px 40px;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:26px;}
+  .back{font-family:monospace; font-size:12px; color:var(--dim); text-decoration:none; border:1px solid var(--line); padding:6px 12px; border-radius:20px;}
+  .mark{font-family:'Cairo',sans-serif; font-weight:800; font-size:16px;}
+  .mark span{color:var(--scan);}
+
+  /* step rail */
+  .rail{display:flex; gap:6px; margin-bottom:24px;}
+  .rail .seg{flex:1; height:4px; border-radius:4px; background:var(--line);}
+  .rail .seg.done{background:var(--scan);}
+
+  .step-tag{font-family:monospace; font-size:11px; color:var(--dim); letter-spacing:2px; margin-bottom:10px; display:block;}
+  .story-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:24px; margin-bottom:22px; line-height:1.95; font-size:15.5px;
+  }
+
+  .choices{display:flex; flex-direction:column; gap:12px;}
+  .choice{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; text-align:right; font-size:14.5px; line-height:1.8;
+    cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .choice:hover{border-color:var(--scan);}
+
+  .end-badge{
+    display:inline-block; font-family:monospace; font-size:12px; letter-spacing:1px;
+    padding:6px 14px; border-radius:20px; margin-bottom:16px;
+  }
+  .end-badge.good{color:var(--signal); border:1px solid var(--signal); background:rgba(49,208,170,0.08);}
+  .end-badge.mid{color:var(--warn); border:1px solid var(--warn); background:rgba(255,176,32,0.08);}
+  .end-badge.bad{color:var(--noise); border:1px solid var(--noise); background:rgba(255,59,92,0.08);}
+
+  .btn{padding:14px; border-radius:12px; font-family:'Cairo',sans-serif; font-weight:800; font-size:15px; cursor:pointer; border:none; width:100%;}
+  .btn-primary{background:var(--scan); color:#04121a;}
+
+  footer{margin-top:auto; padding-top:30px; text-align:center; color:var(--dim); font-size:12px; font-family:monospace;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <a class="back" href="lobby.html">← اللوبي</a>
+    <div class="mark">خط <span>الزمن</span></div>
+  </div>
+
+  <div class="rail" id="rail"></div>
+  <span class="step-tag" id="stepTag"></span>
+
+  <div class="story-card" id="storyText"></div>
+
+  <div class="choices" id="choicesList"></div>
+
+  <footer>خط الزمن — الصح من الغلط</footer>
+</div>
+
+<script>
+/* =====================================================================
+   السيناريو — عدّل هنا بس
+   بنية شجرة: كل عقدة node ليها id, text, وإما choices (كل واحد بيودي لـ id تاني)
+   أو end (النهاية) بشكل { badge: "good"|"mid"|"bad", title, text }
+   TOTAL_STEPS بيتحكم في شكل الـ rail بس (تقريبي)
+===================================================================== */
+const TOTAL_STEPS = 3;
+
+const NODES = {
+  start: {
+    text: "كريم طالب في كلية الهندسة، وقدامه تسليم مشروع مهم بكرة الصبح. هو متأخر شوية وفاتح أداة AI على اللابتوب. إيه أول حاجة هيسألها؟",
+    choices: [
+      { label: "يطلب منها تعمله المشروع كامل من الصفر للآخر.", next: "fullReplace" },
+      { label: "يسألها تشرحله المفاهيم اللي مش فاهمها في المشروع وهو هيطبقها بنفسه.", next: "assistUnderstand" },
+      { label: "يطلب منها تديله كود جاهز وهيلزقه من غير ما يفهمه.", next: "copyPaste" }
+    ]
+  },
+  fullReplace: {
+    text: "الأداة كتبتله المشروع كامل. كريم فرحان لأنه هيسلّم بدري، بس لسه مش فاهم أي جزء من المشروع.",
+    choices: [
+      { label: "يسلّم زي ما هو من غير مراجعة.", next: "endBadFull" },
+      { label: "يرجع يقرا كل جزء ويحاول يفهمه قبل التسليم.", next: "recoverPartial" }
+    ]
+  },
+  assistUnderstand: {
+    text: "الأداة شرحتله المفاهيم الصعبة بأمثلة واضحة. دلوقتي كريم فاهم الأساس وبيبدأ يكتب الحل بنفسه.",
+    choices: [
+      { label: "يكمل المشروع بنفسه ويستخدم الأداة بس لما يعلق.", next: "endGood" },
+      { label: "يقرر برضو إنه أسهل إنه يخلي الأداة تكمل الباقي كامل.", next: "fullReplace" }
+    ]
+  },
+  copyPaste: {
+    text: "كريم لزق الكود من غير ما يفهمه، ودكتور المادة سأله يشرح جزء منه في المناقشة الشفهية بكرة.",
+    choices: [
+      { label: "يحاول يفهم الكود دلوقتي قبل المناقشة.", next: "recoverPartial" },
+      { label: "يعتمد إنه هيرتجل في المناقشة.", next: "endBadCopy" }
+    ]
+  },
+  recoverPartial: {
+    text: "كريم قعد يراجع ويفهم اللي كتبه، وصلح أجزاء كانت غلط، وبقى قادر يشرح المشروع.",
+    end: { badge: "mid", title: "نجا بالوقت الضيق", text: "استخدمت الأداة بشكل غلط الأول، بس رجعت وصلحت الموقف بالمجهود والفهم. المرة الجاية، ابدأ بالاستخدام الصح من الأول." }
+  },
+  endGood: {
+    end: { badge: "good", title: "استخدام صح من البداية", text: "استخدمت الـ AI كأداة تعليم ومساعدة، والمجهود والفهم الحقيقي فضلوا شغلك أنت. ده بالظبط الاستخدام اللي بيخلي التكنولوجيا تفيدك مش تعوّض مكانك." }
+  },
+  endBadFull: {
+    end: { badge: "bad", title: "مجهود مفقود", text: "سلّمت شغل مش فاهمه، وده هيرجع عليك في الامتحان أو المناقشة. الأداة عملت الشغل، إنت ما اتعلمتش حاجة." }
+  },
+  endBadCopy: {
+    end: { badge: "bad", title: "مفاجأة في المناقشة", text: "لزقت كود من غير فهم، وده ظهر واضح لما اتسألت عنه. الاستخدام السليم للأداة كان لازم يبدأ بفهم مش نسخ." }
+  },
+  trapStart: {
+    text: "منى فوجئت إن حد استخدم صورتها وعمل حساب وهمي بيها وبيراسل أصحابها يطلب فلوس. هي حاسة إنها وقعت في فخ. إيه أول خطوة تعملها؟",
+    choices: [
+      { label: "تحذف كل الرسائل والدليل على طول عشان تنسى الموضوع.", next: "trapDelete" },
+      { label: "تاخد سكرين شوت لكل حاجة قبل أي خطوة تانية.", next: "trapScreenshot" }
+    ]
+  },
+  trapDelete: {
+    text: "منى حذفت كل حاجة. لما حاولت تبلغ الجهات المختصة، ما كانش عندها أي دليل تقدمه.",
+    end: { badge: "bad", title: "الدليل ضاع", text: "حذف المحتوى بيمحي الدليل اللي ممكن يثبت حقك. الخطوة الصح دايمًا: التزم الهدوء ولا تمسح الدليل." }
+  },
+  trapScreenshot: {
+    text: "منى وثّقت كل الرسائل والروابط بسكرين شوت. دلوقتي إيه الخطوة الجاية؟",
+    choices: [
+      { label: "تستمر تتكلم مع الحساب الوهمي عشان تعرف مين وراه.", next: "trapEngage" },
+      { label: "تعمل بلوك فوري للحساب المحتال وتقطع الاتصال.", next: "trapBlock" }
+    ]
+  },
+  trapEngage: {
+    text: "منى فضلت تتكلم مع الحساب المحتال فترة أطول، وده خلاها عرضة لمخاطر أكتر.",
+    end: { badge: "mid", title: "مخاطرة مش محتاجة", text: "التوثيق كان صح، بس الاستمرار في التواصل مع المحتال بيزود المخاطر من غير فايدة حقيقية. البلوك الفوري كان الخطوة الأدق." }
+  },
+  trapBlock: {
+    text: "منى عملت بلوك للحساب فورًا، وبعدين بلّغت الجهات الرسمية المختصة بكل الأدلة اللي وثّقتها.",
+    end: { badge: "good", title: "تعاملت صح مع الفخ", text: "التوثيق أولاً، بعدين قطع الاتصال بالبلوك، وأخيرًا التبليغ الرسمي — ده بالظبط الترتيب الصح للتعامل مع أي محاولة نصب أو انتحال شخصية." }
+  }
+};
+
+let stepCount = 0;
+const el = id => document.getElementById(id);
+
+function renderRail(){
+  const rail = el('rail');
+  rail.innerHTML = '';
+  for(let i = 0; i < TOTAL_STEPS; i++){
+    const seg = document.createElement('div');
+    seg.className = 'seg' + (i < stepCount ? ' done' : '');
+    rail.appendChild(seg);
+  }
+}
+
+function showPicker(){
+  stepCount = 0;
+  renderRail();
+  el('stepTag').textContent = 'اختار السيناريو';
+  el('storyText').textContent = 'اختار الموقف اللي عايز تعيشه:';
+  el('choicesList').innerHTML = `
+    <div class="choice" id="pickCourse">كريم والمشروع المتأخر</div>
+    <div class="choice" id="pickTrap">منى وحساب الانتحال</div>
+  `;
+  el('pickCourse').addEventListener('click', () => renderNode('start'));
+  el('pickTrap').addEventListener('click', () => renderNode('trapStart'));
+}
+
+function renderNode(id){
+  const node = NODES[id];
+
+  if(node.end){
+    el('stepTag').textContent = 'النهاية';
+    el('storyText').innerHTML = `
+      <span class="end-badge ${node.end.badge}">${node.end.title}</span>
+      <div>${node.end.text}</div>
+    `;
+    el('choicesList').innerHTML = `<button class="btn btn-primary" id="restartBtn">جرّب سيناريو تاني</button>`;
+    el('restartBtn').addEventListener('click', showPicker);
+    renderRail();
+    return;
+  }
+
+  stepCount = Math.min(stepCount + 1, TOTAL_STEPS);
+  renderRail();
+  el('stepTag').textContent = `القرار ${stepCount}`;
+  el('storyText').textContent = node.text;
+
+  const wrap = el('choicesList');
+  wrap.innerHTML = '';
+  node.choices.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'choice';
+    div.textContent = c.label;
+    div.addEventListener('click', () => renderNode(c.next));
+    wrap.appendChild(div);
+  });
+}
+
+showPicker();
+</script>
+</body>
+</html>

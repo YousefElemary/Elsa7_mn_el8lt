@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>غرفة التحقيق | الصح من الغلط</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#12151b; --line:#242832;
+    --ink:#eef1f6; --dim:#8b93a3;
+    --signal:#31d0aa; --noise:#ff3b5c; --scan:#00d4ff; --warn:#ffb020;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Tajawal',sans-serif; min-height:100vh; position:relative;}
+  body::before{content:""; position:fixed; inset:0; background:repeating-linear-gradient(180deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px); pointer-events:none; z-index:1;}
+  .app{position:relative; z-index:2; max-width:640px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding:28px 20px 40px;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:26px;}
+  .back{font-family:monospace; font-size:12px; color:var(--dim); text-decoration:none; border:1px solid var(--line); padding:6px 12px; border-radius:20px;}
+  .mark{font-family:'Cairo',sans-serif; font-weight:800; font-size:16px;}
+  .mark span{color:var(--scan);}
+
+  .case-tag{font-family:monospace; font-size:11px; color:var(--warn); letter-spacing:2px; margin-bottom:10px; display:block;}
+  .case-title{font-family:'Cairo',sans-serif; font-weight:800; font-size:24px; line-height:1.5; margin-bottom:18px;}
+
+  .scenario-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:22px; margin-bottom:22px; line-height:1.9; font-size:15px; color:var(--ink);
+  }
+
+  .clues{display:flex; flex-direction:column; gap:10px; margin-bottom:24px;}
+  .clue{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    overflow:hidden;
+  }
+  .clue-head{
+    padding:14px 16px; display:flex; align-items:center; justify-content:space-between;
+    cursor:pointer; font-family:'Cairo',sans-serif; font-weight:700; font-size:14.5px;
+  }
+  .clue-head:hover{background:var(--panel-hi, #161a22);}
+  .clue-icon{font-family:monospace; color:var(--scan); font-size:13px;}
+  .clue-body{
+    max-height:0; overflow:hidden; transition:max-height .25s ease;
+    font-size:13.5px; color:var(--dim); line-height:1.85;
+  }
+  .clue-body-inner{padding:0 16px 16px;}
+  .clue.open .clue-body{max-height:200px;}
+  .clue.open .clue-icon::before{content:"— ";}
+  .clue-icon::before{content:"+ ";}
+
+  .verdict-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:22px; margin-bottom:16px;
+  }
+  .verdict-label{font-family:monospace; font-size:12px; color:var(--dim); letter-spacing:1px; margin-bottom:14px; display:block;}
+  .verdict-btns{display:flex; gap:12px;}
+  .vbtn{
+    flex:1; padding:16px; border-radius:12px; border:1px solid var(--line);
+    background:transparent; color:var(--ink); font-family:'Cairo',sans-serif; font-weight:800;
+    font-size:15px; cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .vbtn.ok:hover{border-color:var(--signal); background:rgba(49,208,170,0.08);}
+  .vbtn.bad:hover{border-color:var(--noise); background:rgba(255,59,92,0.08);}
+  .vbtn[disabled]{opacity:.5; cursor:default;}
+  .vbtn.chosen.correct{border-color:var(--signal); background:rgba(49,208,170,0.12);}
+  .vbtn.chosen.incorrect{border-color:var(--noise); background:rgba(255,59,92,0.12);}
+
+  .verdict-result{
+    margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14px; line-height:1.85; display:none;
+  }
+  .verdict-result.show{display:block;}
+  .verdict-result.correct{background:rgba(49,208,170,0.08); border:1px solid var(--signal); color:var(--signal);}
+  .verdict-result.incorrect{background:rgba(255,59,92,0.08); border:1px solid var(--noise); color:var(--noise);}
+
+  .nav-row{display:flex; gap:12px; margin-top:6px;}
+  .btn{padding:14px; border-radius:12px; font-family:'Cairo',sans-serif; font-weight:800; font-size:14px; cursor:pointer; border:none; flex:1;}
+  .btn-primary{background:var(--scan); color:#04121a;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink);}
+  .btn[disabled]{opacity:.4; cursor:default;}
+
+  footer{margin-top:auto; padding-top:30px; text-align:center; color:var(--dim); font-size:12px; font-family:monospace;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <a class="back" href="lobby.html">← اللوبي</a>
+    <div class="mark">غرفة <span>التحقيق</span></div>
+  </div>
+
+  <span class="case-tag" id="caseNum">CASE_01</span>
+  <h1 class="case-title" id="caseTitle"></h1>
+
+  <div class="scenario-card" id="scenarioText"></div>
+
+  <div class="clues" id="cluesList"></div>
+
+  <div class="verdict-box">
+    <span class="verdict-label">حكمك: الاستخدام ده صح ولا غلط؟</span>
+    <div class="verdict-btns">
+      <button class="vbtn ok" id="btnRight">صح ✓</button>
+      <button class="vbtn bad" id="btnWrong">غلط ✕</button>
+    </div>
+    <div class="verdict-result" id="verdictResult"></div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-ghost" id="prevBtn">القضية السابقة</button>
+    <button class="btn btn-primary" id="nextBtn" disabled>القضية التالية</button>
+  </div>
+
+  <footer>غرفة التحقيق — الصح من الغلط</footer>
+</div>
+
+<script>
+/* =====================================================================
+   القضايا — عدّل هنا بس
+   كل قضية: عنوان، نص السيناريو، مصفوفة أدلة (عنوان + تفاصيل)،
+   verdict الصح (true = "صح"، false = "غلط")، وشرح بعد الحكم.
+===================================================================== */
+const CASES = [
+  {
+    title: "الصورة اللي اتنشرت في نص الليل",
+    scenario: "حد نشر صورة بتقول إنها لحادثة كبيرة حصلت في مدينتك، الصورة فيها إضاءة وظلال غريبة شوية والتفاصيل في الخلفية مش منطقية. الشخص قال إنه أخد الصورة بنفسه.",
+    clues: [
+      { title: "فحص الإضاءة والظلال", body: "الظل بتاع أكتر من عنصر في الصورة بيتجه لاتجاهات مختلفة — ده مؤشر كلاسيكي على صورة مولّدة بالـ AI." },
+      { title: "تاريخ الحساب", body: "الحساب اتعمل من أسبوعين بس ومفيهوش أي منشورات تانية غير المنشور ده." },
+      { title: "بحث عكسي عن الصورة", body: "نفس الصورة (أو صور شبيهة جدًا) موجودة على مواقع AI-generated art من شهرين." }
+    ],
+    verdict: false,
+    explain: "الأدلة التلاتة بتأكد إن الصورة مولّدة بالـ AI ومش حقيقية، والشخص بيقدمها على إنها واقعية — ده استخدام غلط ومضلل."
+  },
+  {
+    title: "الطالب واللي استخدم AI في بحثه",
+    scenario: "طالب استخدم أداة AI عشان يلخصله مصادر بحث علمي، وبعدين كتب البحث بنفسه بأسلوبه واستشهد بالمصادر الأصلية، وحط في آخر البحث إنه استخدم أداة AI في مرحلة التلخيص.",
+    clues: [
+      { title: "طريقة الاستخدام", body: "الأداة استُخدمت في تنظيم المعلومات مش في كتابة البحث نفسه." },
+      { title: "الشفافية", body: "الطالب صرّح باستخدامه للأداة بوضوح في البحث." },
+      { title: "المصادر", body: "كل الاستشهادات بترجع لمصادر أكاديمية حقيقية قابلة للتحقق." }
+    ],
+    verdict: true,
+    explain: "استخدام AI كأداة مساعدة في التنظيم مع الإفصاح والالتزام بالمصادر الحقيقية ده بالظبط الاستخدام الصح — الأداة ساعدت، ما عملتش الشغل بدل الطالب."
+  },
+  {
+    title: "الرسالة اللي بتوعد بربح مضمون",
+    scenario: "وصلتك رسالة من 'مستشار مالي' بيقولك إن فيه استثمار مضمون 100% وهيضاعف فلوسك في أسبوع، ومرفق معاها صوت للشخص بيشرح الفكرة بصوت واثق جدًا.",
+    clues: [
+      { title: "تحليل الصوت", body: "نبرة الصوت ثابتة بشكل غير طبيعي في كل الجملة، من غير أي توقفات طبيعية أو أنفاس — علامة على صوت مصطنع بالـ AI." },
+      { title: "منطق العرض", body: "لا يوجد استثمار حقيقي بيضمن ربح 100% في أسبوع — ده غير منطقي ماليًا." },
+      { title: "مصدر الرسالة", body: "الرقم اللي بعت منه الرسالة غير مسجل باسم أي شركة استثمار مرخصة." }
+    ],
+    verdict: false,
+    explain: "صوت مصطنع بالـ AI + وعد مالي غير منطقي + مصدر غير موثّق = محاولة نصب واضحة، مش استخدام مشروع للتكنولوجيا."
+  },
+  {
+    title: "الإيميل اللي بيطلب تحديث بياناتك",
+    scenario: "وصلك إيميل شكله رسمي جدًا من 'إدارة الحساب' بيقول إن فيه مشكلة أمنية طارئة، ولازم تضغط على لينك مرفق وتحدّث بياناتك البنكية فورًا وإلا هيتقفل حسابك.",
+    clues: [
+      { title: "لغة الرسالة", body: "الرسالة بتستخدم أسلوب استعجال وتهديد ('طارئ'، 'هيتقفل حسابك') — ده أسلوب كلاسيكي في التصيد الإلكتروني (Phishing)." },
+      { title: "الرابط المرفق", body: "عنوان الرابط لما تمرر عليه الماوس مختلف شوية عن اسم الموقع الرسمي المعروف." },
+      { title: "الجهة المرسلة", body: "الإيميل الرسمي بيطلب منك عادةً تدخل على الموقع بنفسك من غير ما تضغط لينكات في رسائل." }
+    ],
+    verdict: false,
+    explain: "الرسائل اللي بتخلق إحساس استعجال وتطلب بيانات حساسة عن طريق لينك هي محاولة تصيد إلكتروني، حتى لو شكلها رسمي جدًا."
+  },
+  {
+    title: "الطالبة اللي استخدمت AI في مراجعة كودها",
+    scenario: "طالبة برمجة استخدمت أداة AI عشان تراجعلها كود كتبته بنفسها، وتقترح تحسينات وتوضحلها الأخطاء. هي فهمت كل التعديلات وطبقتها بإيديها.",
+    clues: [
+      { title: "مين كتب الكود الأصلي", body: "الكود الأساسي والمنطق كله من كتابة الطالبة نفسها." },
+      { title: "دور الأداة", body: "الأداة استُخدمت في المراجعة والتحسين، مش في كتابة الحل من الصفر." },
+      { title: "الفهم", body: "الطالبة قادرة تشرح كل تعديل اتعمل وليه، مش بس ناسخة." }
+    ],
+    verdict: true,
+    explain: "استخدام AI كمراجع وموجّه تقني مع فهم كامل للتعديلات ده استخدام صح وذكي — بيسرّع التعلم مش بيلغيه."
+  }
+];
+
+/* ===================================================================== */
+
+let idx = 0;
+let answered = false;
+const el = id => document.getElementById(id);
+
+function render(){
+  answered = false;
+  const c = CASES[idx];
+  el('caseNum').textContent = `CASE_${String(idx + 1).padStart(2,'0')} / ${CASES.length}`;
+  el('caseTitle').textContent = c.title;
+  el('scenarioText').textContent = c.scenario;
+
+  const cluesWrap = el('cluesList');
+  cluesWrap.innerHTML = '';
+  c.clues.forEach((clue, i) => {
+    const div = document.createElement('div');
+    div.className = 'clue';
+    div.innerHTML = `
+      <div class="clue-head">
+        <span>${clue.title}</span>
+        <span class="clue-icon"></span>
+      </div>
+      <div class="clue-body"><div class="clue-body-inner">${clue.body}</div></div>
+    `;
+    div.querySelector('.clue-head').addEventListener('click', () => {
+      div.classList.toggle('open');
+    });
+    cluesWrap.appendChild(div);
+  });
+
+  ['btnRight','btnWrong'].forEach(id => {
+    const b = el(id);
+    b.disabled = false;
+    b.classList.remove('chosen','correct','incorrect');
+  });
+  const vr = el('verdictResult');
+  vr.className = 'verdict-result';
+  vr.textContent = '';
+
+  el('nextBtn').disabled = true;
+  el('prevBtn').style.visibility = idx === 0 ? 'hidden' : 'visible';
+}
+
+function judge(choice){
+  if(answered) return;
+  answered = true;
+  const c = CASES[idx];
+  const isCorrect = choice === c.verdict;
+
+  const chosenBtn = choice ? el('btnRight') : el('btnWrong');
+  chosenBtn.classList.add('chosen', isCorrect ? 'correct' : 'incorrect');
+  el('btnRight').disabled = true;
+  el('btnWrong').disabled = true;
+
+  const vr = el('verdictResult');
+  vr.classList.add('show', isCorrect ? 'correct' : 'incorrect');
+  vr.textContent = (isCorrect ? 'حكم صح. ' : 'حكم غلط. ') + c.explain;
+
+  el('nextBtn').disabled = false;
+}
+
+el('btnRight').addEventListener('click', () => judge(true));
+el('btnWrong').addEventListener('click', () => judge(false));
+
+el('nextBtn').addEventListener('click', () => {
+  if(idx < CASES.length - 1){ idx++; render(); }
+  else { window.location.href = 'lobby.html'; }
+});
+el('prevBtn').addEventListener('click', () => {
+  if(idx > 0){ idx--; render(); }
+});
+
+render();
+</script>
+</body>
+</html>

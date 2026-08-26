@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ميزان الثقة | الصح من الغلط</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#12151b; --line:#242832;
+    --ink:#eef1f6; --dim:#8b93a3;
+    --signal:#31d0aa; --noise:#ff3b5c; --scan:#00d4ff; --warn:#ffb020;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Tajawal',sans-serif; min-height:100vh; position:relative;}
+  body::before{content:""; position:fixed; inset:0; background:repeating-linear-gradient(180deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px); pointer-events:none; z-index:1;}
+  .app{position:relative; z-index:2; max-width:640px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding:28px 20px 40px;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:26px;}
+  .back{font-family:monospace; font-size:12px; color:var(--dim); text-decoration:none; border:1px solid var(--line); padding:6px 12px; border-radius:20px;}
+  .mark{font-family:'Cairo',sans-serif; font-weight:800; font-size:16px;}
+  .mark span{color:var(--scan);}
+
+  .round-tag{font-family:monospace; font-size:11px; color:var(--dim); letter-spacing:2px; margin-bottom:10px; display:block;}
+
+  .content-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:22px; margin-bottom:18px; line-height:1.9; font-size:15px;
+  }
+  .content-eyebrow{font-family:monospace; font-size:11px; color:var(--scan); letter-spacing:2px; display:block; margin-bottom:10px;}
+
+  .cues{display:flex; flex-direction:column; gap:8px; margin-bottom:22px; min-height:20px;}
+  .cue-line{
+    font-size:13px; color:var(--dim); padding:10px 14px;
+    border-right:2px solid var(--scan); background:var(--panel); border-radius:0 8px 8px 0;
+    opacity:0; transform:translateY(-4px); animation:cueIn .3s forwards;
+  }
+  @keyframes cueIn{ to{opacity:1; transform:translateY(0);} }
+
+  .reveal-btn{
+    width:100%; padding:12px; border-radius:10px; border:1px dashed var(--line);
+    background:transparent; color:var(--dim); font-family:monospace; font-size:12.5px;
+    cursor:pointer; margin-bottom:22px;
+  }
+  .reveal-btn:hover{border-color:var(--scan); color:var(--scan);}
+  .reveal-btn[disabled]{opacity:.4; cursor:default;}
+
+  .scale-wrap{margin-bottom:8px;}
+  .scale-labels{display:flex; justify-content:space-between; font-family:monospace; font-size:11px; color:var(--dim); margin-bottom:10px;}
+  .scale-labels .l{color:var(--noise);}
+  .scale-labels .r{color:var(--signal);}
+  input[type=range]{
+    width:100%; height:6px; border-radius:6px;
+    background:linear-gradient(90deg, var(--noise), var(--warn), var(--signal));
+    -webkit-appearance:none; outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:22px; height:22px; border-radius:50%;
+    background:var(--ink); border:3px solid var(--scan); cursor:pointer;
+  }
+  .scale-readout{
+    text-align:center; font-family:'Cairo',sans-serif; font-weight:800; font-size:14px;
+    color:var(--scan); margin:14px 0 20px;
+  }
+
+  .zone-marker{
+    position:relative; height:16px; margin-bottom:20px;
+  }
+  .zone-marker .band{
+    position:absolute; top:6px; height:4px; border-radius:4px; background:rgba(49,208,170,0.35);
+  }
+  .zone-marker .band.show{display:block;}
+  .zone-marker .band{display:none;}
+
+  .btn{padding:14px; border-radius:12px; font-family:'Cairo',sans-serif; font-weight:800; font-size:15px; cursor:pointer; border:none; width:100%;}
+  .btn-primary{background:var(--scan); color:#04121a;}
+  .btn[disabled]{opacity:.4; cursor:default;}
+
+  .feedback{
+    padding:14px 16px; border-radius:10px; font-size:14px; line-height:1.85; margin-top:16px; display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.good{background:rgba(49,208,170,0.08); border:1px solid var(--signal); color:var(--signal);}
+  .feedback.mid{background:rgba(255,176,32,0.08); border:1px solid var(--warn); color:var(--warn);}
+  .feedback.bad{background:rgba(255,59,92,0.08); border:1px solid var(--noise); color:var(--noise);}
+
+  .next-btn{margin-top:14px; display:none;}
+  .next-btn.show{display:block;}
+
+  footer{margin-top:auto; padding-top:30px; text-align:center; color:var(--dim); font-size:12px; font-family:monospace;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <a class="back" href="lobby.html">← اللوبي</a>
+    <div class="mark">ميزان <span>الثقة</span></div>
+  </div>
+
+  <span class="round-tag" id="roundTag"></span>
+
+  <div class="content-card">
+    <span class="content-eyebrow" id="contentType"></span>
+    <div id="contentText"></div>
+  </div>
+
+  <button class="reveal-btn" id="revealBtn">+ كشف مؤشر تاني</button>
+  <div class="cues" id="cuesList"></div>
+
+  <div class="scale-wrap">
+    <div class="scale-labels">
+      <span class="l">أثق تمامًا</span>
+      <span class="r">محتاج أتأكد</span>
+    </div>
+    <input type="range" id="trustSlider" min="0" max="100" value="50">
+    <div class="scale-readout" id="readout">٥٠</div>
+  </div>
+
+  <button class="btn btn-primary" id="lockBtn">قفّل قرارك</button>
+  <div class="feedback" id="feedbackBox"></div>
+  <button class="btn btn-primary next-btn" id="nextBtn">الحالة التالية</button>
+
+  <footer>ميزان الثقة — الصح من الغلط</footer>
+</div>
+
+<script>
+/* =====================================================================
+   الحالات — عدّل هنا بس
+   كل حالة: type (نص/صورة/صوت)، content (النص المعروض)،
+   cues (مؤشرات بتتكشف بالتدريج بالترتيب)،
+   idealRange [من, إلى] على مقياس ٠-١٠٠ (٠=أثق تمامًا, ١٠٠=محتاج أتأكد)
+===================================================================== */
+const CASES = [
+  {
+    type: "نص — منشور",
+    content: "\"عالم مصري بيقول إن شرب كوب زيت زيتون على الريق بيمنع أي مرض للأبد، والطب الحديث بيخبي الحقيقة دي.\"",
+    cues: [
+      "مفيش اسم واضح للعالم ولا مصدر أكاديمي منشور فيه الكلام ده.",
+      "الجملة بتستخدم أسلوب 'الحقيقة المخفية' اللي بيتكرر في محتوى تضليل صحي.",
+      "لا يوجد أي مرجع طبي أو دراسة قابلة للتحقق تدعم الادعاء."
+    ],
+    idealRange: [80, 100]
+  },
+  {
+    type: "صوت — تسجيل",
+    content: "تسجيل صوتي لمسؤول حكومي بيتكلم عن قرار جديد، اتنشر على حساب رسمي معروف ومؤكد (verified) للجهة.",
+    cues: [
+      "الحساب موثّق (verified) ومعروف إنه بيتبع الجهة الرسمية.",
+      "التسجيل متطابق مع تصريحات سابقة معروفة لنفس المسؤول من ناحية الأسلوب.",
+      "الجهة الرسمية أكدت الخبر على قنواتها التانية كمان."
+    ],
+    idealRange: [0, 20]
+  },
+  {
+    type: "صورة — منشور",
+    content: "صورة لمنتج جديد من شركة تكنولوجيا معروفة، اتنشرت على صفحة تقنية شهيرة قبل الإعلان الرسمي بيوم، من غير مصدر واضح للصورة.",
+    cues: [
+      "الصفحة معروفة بتسريبات سابقة كان بعضها صح وبعضها غلط.",
+      "الشركة نفسها لسه ما أكدتش ولا نفت الصورة.",
+      "فيه تفاصيل في التصميم متطابقة مع تسريبات تانية من مصادر مختلفة."
+    ],
+    idealRange: [45, 65]
+  },
+  {
+    type: "منشور — نصيحة رقمية",
+    content: "حساب كبير بيقول: 'شاهد ٨ ساعات فيديوهات قصيرة يوميًا؟ عادي خالص طالما بتضحك وتترفّه — مفيش أي ضرر في كده.'",
+    cues: [
+      "الاستهلاك المفرط والعشوائي للمحتوى القصير مرتبط علميًا بتراجع القدرة على التركيز (ظاهرة معروفة باسم 'التعفن الدماغي').",
+      "٨ ساعات يوميًا بتاخد وقت كبير من مهام تانية زي النوم والدراسة والإنتاجية.",
+      "النصيحة بتنكر أي ضرر بشكل مطلق من غير أي دليل أو مصدر علمي."
+    ],
+    idealRange: [70, 90]
+  }
+];
+
+let idx = 0;
+let cueStep = 0;
+let locked = false;
+const el = id => document.getElementById(id);
+
+function render(){
+  cueStep = 0;
+  locked = false;
+  const c = CASES[idx];
+  el('roundTag').textContent = `CASE_${String(idx+1).padStart(2,'0')} / ${CASES.length}`;
+  el('contentType').textContent = c.type;
+  el('contentText').textContent = c.content;
+  el('cuesList').innerHTML = '';
+  el('revealBtn').disabled = false;
+  el('revealBtn').textContent = '+ كشف مؤشر تاني';
+
+  el('trustSlider').value = 50;
+  el('trustSlider').disabled = false;
+  el('readout').textContent = '٥٠';
+
+  el('lockBtn').disabled = false;
+  el('lockBtn').style.display = 'block';
+  const fb = el('feedbackBox');
+  fb.className = 'feedback';
+  fb.textContent = '';
+  el('nextBtn').classList.remove('show');
+}
+
+el('revealBtn').addEventListener('click', () => {
+  const c = CASES[idx];
+  if(cueStep >= c.cues.length) return;
+  const line = document.createElement('div');
+  line.className = 'cue-line';
+  line.textContent = c.cues[cueStep];
+  el('cuesList').appendChild(line);
+  cueStep++;
+  if(cueStep >= c.cues.length){
+    el('revealBtn').disabled = true;
+    el('revealBtn').textContent = 'كل المؤشرات اتكشفت';
+  } else {
+    el('revealBtn').textContent = `+ كشف مؤشر تاني (${cueStep}/${c.cues.length})`;
+  }
+});
+
+const toArabicNum = n => String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+
+el('trustSlider').addEventListener('input', (e) => {
+  el('readout').textContent = toArabicNum(e.target.value);
+});
+
+el('lockBtn').addEventListener('click', () => {
+  if(locked) return;
+  locked = true;
+  const c = CASES[idx];
+  const val = parseInt(el('trustSlider').value, 10);
+  const [lo, hi] = c.idealRange;
+  const dist = val < lo ? lo - val : (val > hi ? val - hi : 0);
+
+  el('trustSlider').disabled = true;
+  el('lockBtn').style.display = 'none';
+
+  const fb = el('feedbackBox');
+  fb.classList.add('show');
+  let level, text;
+  if(dist === 0){
+    level = 'good';
+    text = `دقيق! المنطقة الصح كانت بين ${toArabicNum(lo)} و ${toArabicNum(hi)} بناءً على المؤشرات اللي كشفتها.`;
+  } else if(dist <= 20){
+    level = 'mid';
+    text = `قريب. المنطقة الصح كانت بين ${toArabicNum(lo)} و ${toArabicNum(hi)} — راجع المؤشرات تاني المرة الجاية.`;
+  } else {
+    level = 'bad';
+    text = `بعيد عن الصح. المنطقة الصح كانت بين ${toArabicNum(lo)} و ${toArabicNum(hi)} — جرّب تكشف كل المؤشرات قبل ما تقرر.`;
+  }
+  fb.classList.add(level);
+  fb.textContent = text;
+
+  el('nextBtn').classList.add('show');
+});
+
+el('nextBtn').addEventListener('click', () => {
+  if(idx < CASES.length - 1){ idx++; render(); }
+  else { window.location.href = 'lobby.html'; }
+});
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الصح من الغلط | اللعبة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c10;
+    --panel:#12151b;
+    --line:#242832;
+    --ink:#eef1f6;
+    --dim:#8b93a3;
+    --signal:#31d0aa;   /* correct */
+    --noise:#ff3b5c;    /* wrong */
+    --scan:#00d4ff;     /* accent / cursor */
+    --warn:#ffb020;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Tajawal', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  /* ambient scanline texture */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:repeating-linear-gradient(180deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px);
+    pointer-events:none;
+    z-index:1;
+  }
+  .app{
+    position:relative;
+    z-index:2;
+    max-width:640px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding:28px 20px 40px;
+  }
+
+  /* ===== header / brand ===== */
+  .brand{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:32px;
+  }
+  .brand .mark{
+    font-family:'Cairo', sans-serif;
+    font-weight:800;
+    font-size:20px;
+    letter-spacing:0.5px;
+  }
+  .brand .mark span{color:var(--scan);}
+  .signal-badge{
+    font-size:11px;
+    color:var(--dim);
+    border:1px solid var(--line);
+    padding:4px 10px;
+    border-radius:20px;
+    letter-spacing:1px;
+    font-family:monospace;
+  }
+
+  /* ===== screens ===== */
+  .screen{display:none; flex:1; flex-direction:column;}
+  .screen.active{display:flex;}
+
+  /* --- start screen --- */
+  .hero-title{
+    font-family:'Cairo', sans-serif;
+    font-weight:800;
+    font-size:clamp(30px,7vw,44px);
+    line-height:1.25;
+    margin-bottom:10px;
+  }
+  .hero-title .glitchword{
+    color:var(--noise);
+    position:relative;
+    display:inline-block;
+  }
+  .hero-sub{
+    color:var(--dim);
+    font-size:15px;
+    line-height:1.9;
+    margin-bottom:36px;
+    max-width:50ch;
+  }
+  .tier-list{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .tier-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    cursor:pointer;
+    transition:border-color .15s, transform .15s;
+    text-align:right;
+  }
+  .tier-card:hover{border-color:var(--scan); transform:translateX(-2px);}
+  .tier-card .t-info{display:flex; flex-direction:column; gap:4px;}
+  .tier-card .t-name{font-family:'Cairo',sans-serif; font-weight:800; font-size:18px;}
+  .tier-card .t-range{color:var(--dim); font-size:13px; font-family:monospace;}
+  .tier-card .t-go{
+    font-family:monospace; font-size:13px; color:var(--scan);
+    border:1px solid var(--scan); border-radius:8px; padding:6px 12px;
+  }
+
+  /* --- quiz screen --- */
+  .quiz-top{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:22px;
+  }
+  .stage-label{font-family:monospace; font-size:12px; color:var(--dim); letter-spacing:1px;}
+  .progress-track{
+    height:6px; background:var(--panel); border:1px solid var(--line);
+    border-radius:20px; overflow:hidden; margin-bottom:26px;
+  }
+  .progress-fill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg, var(--scan), var(--signal));
+    transition:width .35s ease;
+  }
+  .question-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:26px 22px;
+    margin-bottom:20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .q-eyebrow{
+    font-family:monospace; font-size:11px; color:var(--scan);
+    letter-spacing:2px; margin-bottom:12px; display:block;
+  }
+  .q-text{
+    font-family:'Cairo', sans-serif;
+    font-weight:700;
+    font-size:19px;
+    line-height:1.6;
+  }
+  .options{
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .opt{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:15px 18px;
+    text-align:right;
+    font-size:15px;
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--scan);}
+  .opt.correct{
+    border-color:var(--signal);
+    background:rgba(49,208,170,0.1);
+  }
+  .opt.wrong{
+    border-color:var(--noise);
+    background:rgba(255,59,92,0.1);
+    animation:shake .35s;
+  }
+  .opt[disabled]{cursor:default;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-6px);}
+    75%{transform:translateX(6px);}
+  }
+
+  .feedback{
+    margin-top:16px;
+    padding:14px 16px;
+    border-radius:10px;
+    font-size:14px;
+    line-height:1.8;
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.correct{background:rgba(49,208,170,0.08); border:1px solid var(--signal); color:var(--signal);}
+  .feedback.wrong{background:rgba(255,59,92,0.08); border:1px solid var(--noise); color:var(--noise);}
+
+  .next-btn{
+    margin-top:18px;
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    border:none;
+    background:var(--scan);
+    color:#04121a;
+    font-family:'Cairo',sans-serif;
+    font-weight:800;
+    font-size:15px;
+    cursor:pointer;
+    display:none;
+  }
+  .next-btn.show{display:block;}
+
+  /* glitch flash on wrong answer */
+  .glitch-flash{
+    position:fixed; inset:0; z-index:50;
+    background:var(--noise);
+    opacity:0; pointer-events:none;
+    mix-blend-mode:screen;
+  }
+  .glitch-flash.play{
+    animation:flash .35s steps(2);
+  }
+  @keyframes flash{
+    0%{opacity:0;}
+    20%{opacity:.5; transform:translateX(6px);}
+    40%{opacity:0; transform:translateX(-4px);}
+    60%{opacity:.3;}
+    100%{opacity:0;}
+  }
+
+  /* --- results screen --- */
+  .result-score{
+    font-family:'Cairo',sans-serif;
+    font-weight:800;
+    font-size:56px;
+    text-align:center;
+    margin:30px 0 6px;
+  }
+  .result-score span{font-size:22px; color:var(--dim); font-weight:500;}
+  .result-msg{
+    text-align:center; color:var(--dim); font-size:15px;
+    margin-bottom:30px; line-height:1.8;
+  }
+  .result-actions{display:flex; flex-direction:column; gap:12px;}
+  .btn-primary, .btn-ghost{
+    padding:14px; border-radius:12px; font-family:'Cairo',sans-serif;
+    font-weight:800; font-size:15px; cursor:pointer; border:none;
+  }
+  .btn-primary{background:var(--scan); color:#04121a;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink);}
+
+  footer{
+    margin-top:auto; padding-top:30px;
+    text-align:center; color:var(--dim); font-size:12px; font-family:monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="glitch-flash" id="glitchFlash"></div>
+
+<div class="app">
+
+  <div class="brand">
+    <div class="mark">الصح <span>من</span> الغلط</div>
+    <div class="signal-badge">GAME MODE</div>
+  </div>
+
+  <!-- ===== START SCREEN ===== -->
+  <section class="screen active" id="screen-start">
+    <h1 class="hero-title">إيه اللي حقيقي فعلاً؟<br><span class="glitchword">فرّق بين الصح والغلط.</span></h1>
+    <p class="hero-sub">لعبة أسئلة قصيرة عن التوعية الإعلامية. اختار فئتك العمرية وابدأ المرحلة بتاعتك.</p>
+
+    <div class="tier-list" id="tierList"></div>
+  </section>
+
+  <!-- ===== QUIZ SCREEN ===== -->
+  <section class="screen" id="screen-quiz">
+    <div class="quiz-top">
+      <span class="stage-label" id="tierLabel"></span>
+      <span class="stage-label" id="stageCount"></span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="question-card">
+      <span class="q-eyebrow">سؤال</span>
+      <p class="q-text" id="questionText"></p>
+    </div>
+
+    <div class="options" id="optionsList"></div>
+
+    <div class="feedback" id="feedbackBox"></div>
+    <button class="next-btn" id="nextBtn">التالي</button>
+  </section>
+
+  <!-- ===== RESULTS SCREEN ===== -->
+  <section class="screen" id="screen-result">
+    <div class="result-score" id="resultScore">0<span>/0</span></div>
+    <p class="result-msg" id="resultMsg"></p>
+    <div class="result-actions">
+      <button class="btn-primary" id="retryBtn">إعادة نفس المرحلة</button>
+      <button class="btn-ghost" id="homeBtn">اختيار فئة تانية</button>
+    </div>
+  </section>
+
+  <footer>الصح من الغلط — مبادرة توعية إعلامية</footer>
+</div>
+
+<script>
+/* =====================================================================
+   CONTENT — عدّل هنا بس
+   كل فئة عمرية ليها مصفوفة أسئلة منفصلة. كل سؤال:
+   { q: "نص السؤال", options: ["اختيار1","اختيار2","اختيار3"],
+     correct: 0,  // index الاختيار الصح
+     explain: "شرح قصير بيظهر بعد الإجابة" }
+   الفريق يقدر يزود/يعدّل الأسئلة هنا من غير ما يلمس باقي الكود.
+===================================================================== */
+const TIERS = {
+  kids: {
+    name: "أطفال",
+    range: "٦ - ١٢ سنة",
+    questions: [
+      {
+        q: "صاحبك قالك إن أداة ذكاء اصطناعي عرفت تتنبأ بنتيجة الماتش النهاردة ١٠٠٪. تصدقه؟",
+        options: ["أصدقه وأراهن بيه", "محدش يقدر يتأكد ١٠٠٪ من حاجة زي دي حتى لو AI", "أنشره لكل أصحابي"],
+        correct: 1,
+        explain: "الذكاء الاصطناعي أداة رياضيات وبيانات، مش عرّاف — مينفعش يضمن نتيجة حاجة عشوائية زي مباراة."
+      },
+      {
+        q: "لو شفت صورة غريبة على النت ممكن تكون معمولة بذكاء اصطناعي، إيه أول حاجة تسأل نفسك؟",
+        options: ["الصورة دي حقيقية ولا مولّدة بالـ AI؟", "أشيّرها على طول", "محدش هيشوفها غيري"],
+        correct: 0,
+        explain: "الذكاء الاصطناعي بقى يقدر يولّد صور واقعية جدًا، فمهم نسأل نفسنا الأول قبل ما نصدقها أو ننشرها."
+      },
+      {
+        q: "لاعب في لعبة أونلاين بنيت معاه صداقة وطلب منك رقم تليفون بيتك أو صورة شخصية. تعمل إيه؟",
+        options: ["أديله على طول عشان نبقى أصحاب أوي", "أرفض وأقول لحد كبير في البيت", "أستخبى منه"],
+        correct: 1,
+        explain: "بعض الحسابات الوهمية في الألعاب بتبني ثقة مع لاعبين صغيرين عشان تطلب معلومات شخصية — الرفض والإبلاغ لحد كبير هو الصح."
+      }
+    ]
+  },
+  teens: {
+    name: "مراهقين",
+    range: "١٣ - ١٨ سنة",
+    questions: [
+      {
+        q: "شفت فيديو لشخص مشهور بيقول كلام غريب أوي عنه. إيه العلامة اللي ممكن تكشف إنه Deepfake؟",
+        options: ["رمش العين غير طبيعي أو عدم تطابق حركة الشفايف مع الكلام", "الفيديو دقته عالية جدًا", "الصوت واضح ومفهوم"],
+        correct: 0,
+        explain: "من علامات التزييف العميق: رمش غير طبيعي، تشوهات في حواف الوجه، وعدم تطابق حركة الفم مع الكلمات المنطوقة."
+      },
+      {
+        q: "زميلك خلّى أداة ذكاء اصطناعي تكتبله واجب المدرسة كامل وسلّمه من غير ما يراجعه أو يفهمه. ده إيه؟",
+        options: ["استخدام ذكي لتوفير الوقت", "غش أكاديمي — اعتماد كلي بيلغي التفكير", "مفيش مشكلة طالما الإجابة صح"], 
+        correct: 1,
+        explain: "الاعتماد الكلي على الـ AI وإهمال التفكير هو من أخطر أشكال الاستخدام الخاطئ، وبيهدد جودة التعليم الحقيقي."
+      },
+      {
+        q: "وصلتك رسالة SMS بتقول 'تم إيقاف بطاقتك البنكية، اتصل بالرقم ده فورًا لتنشيطها'. إيه ده؟",
+        options: ["لازم أتصل فورًا قبل ما أخسر فلوسي", "محاولة تصيد إلكتروني (Phishing)", "رسالة رسمية من البنك أكيد"],
+        correct: 1,
+        explain: "التصيد عبر SMS بيستخدم رسائل مستعجلة ومخيفة عشان يخليك تتصرف بسرعة من غير تفكير — التأكد من البنك مباشرة هو الصح."
+      }
+    ]
+  },
+  adults: {
+    name: "كبار",
+    range: "١٨+ سنة",
+    questions: [
+      {
+        q: "سألت أداة ذكاء اصطناعي عن موضوع نادر جدًا، وردّت بمعلومة مؤكدة وتفاصيل دقيقة من غير ما تقول 'مش متأكد'. إيه اللي بيحصل غالبًا؟",
+        options: ["معلومة أكيد صح لأن الرد واثق", "'هلوسة AI' — بيخترع إجابة متناسقة لغويًا بس مش دقيقة", "الـ AI بيكذب علينا عمدًا"],
+        correct: 1,
+        explain: "هلوسة الذكاء الاصطناعي بتحصل لما يحاول يسد الفجوة في المعلومات بكلام يبدو مقنع، حتى لو التفاصيل جواه مخترعة."
+      },
+      {
+        q: "صح أم غلط: 'استخدم كلمة مرور موحدة وسهلة التذكر لكل حساباتك عشان متنساهاش'.",
+        options: ["صح، وده أسهل في الحفظ", "غلط — لازم كلمات مرور مختلفة وتفعيل المصادقة الثنائية (2FA) لكل حساب", "مش مهم طالما كلمة المرور طويلة"],
+        correct: 1,
+        explain: "كلمة مرور موحدة يعني لو اتسرقت هتفتح كل حساباتك مرة واحدة. كلمات مختلفة + 2FA هو خط الدفاع الأول الفعلي."
+      },
+      {
+        q: "أكتر من صفحة مختلفة نشرت نفس الخبر بنفس الصياغة بالظبط. إيه ده يعني بالضرورة؟",
+        options: ["الخبر أكيد صحيح لأن أكتر من مصدر أكده", "ممكن يكونوا بينسخوا من مصدر واحد غير موثّق", "مفيش داعي أتأكد بعد كده"],
+        correct: 1,
+        explain: "تكرار نفس الصياغة الحرفية غالبًا معناه نسخ من مصدر واحد، مش تأكيد مستقل."
+      }
+    ]
+  }
+};
+
+/* ===================================================================== */
+
+const state = { tierKey: null, index: 0, score: 0, answered: false };
+
+const el = id => document.getElementById(id);
+const screens = {
+  start: el('screen-start'),
+  quiz: el('screen-quiz'),
+  result: el('screen-result')
+};
+
+function showScreen(name){
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+}
+
+function buildTierList(){
+  const list = el('tierList');
+  list.innerHTML = '';
+  Object.entries(TIERS).forEach(([key, tier]) => {
+    const card = document.createElement('div');
+    card.className = 'tier-card';
+    card.innerHTML = `
+      <div class="t-info">
+        <span class="t-name">${tier.name}</span>
+        <span class="t-range">${tier.range} · ${tier.questions.length} سؤال</span>
+      </div>
+      <span class="t-go">ابدأ ←</span>
+    `;
+    card.addEventListener('click', () => startTier(key));
+    list.appendChild(card);
+  });
+}
+
+function startTier(key){
+  state.tierKey = key;
+  state.index = 0;
+  state.score = 0;
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  state.answered = false;
+  const tier = TIERS[state.tierKey];
+  const q = tier.questions[state.index];
+
+  el('tierLabel').textContent = tier.name.toUpperCase();
+  el('stageCount').textContent = `${state.index + 1} / ${tier.questions.length}`;
+  el('progressFill').style.width = `${(state.index / tier.questions.length) * 100}%`;
+  el('questionText').textContent = q.q;
+
+  const optsWrap = el('optionsList');
+  optsWrap.innerHTML = '';
+  q.options.forEach((optText, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = optText;
+    btn.addEventListener('click', () => selectAnswer(i));
+    optsWrap.appendChild(btn);
+  });
+
+  const fb = el('feedbackBox');
+  fb.className = 'feedback';
+  fb.textContent = '';
+  el('nextBtn').classList.remove('show');
+}
+
+function selectAnswer(i){
+  if(state.answered) return;
+  state.answered = true;
+
+  const tier = TIERS[state.tierKey];
+  const q = tier.questions[state.index];
+  const opts = document.querySelectorAll('.opt');
+
+  opts.forEach((btn, idx) => {
+    btn.disabled = true;
+    if(idx === q.correct) btn.classList.add('correct');
+    if(idx === i && i !== q.correct) btn.classList.add('wrong');
+  });
+
+  const fb = el('feedbackBox');
+  fb.classList.add('show');
+
+  if(i === q.correct){
+    state.score++;
+    fb.classList.add('correct');
+    fb.textContent = 'صح! ' + q.explain;
+  } else {
+    fb.classList.add('wrong');
+    fb.textContent = 'غلط. ' + q.explain;
+    triggerGlitch();
+  }
+
+  el('nextBtn').classList.add('show');
+}
+
+function triggerGlitch(){
+  const flash = el('glitchFlash');
+  flash.classList.remove('play');
+  void flash.offsetWidth;
+  flash.classList.add('play');
+}
+
+el('nextBtn').addEventListener('click', () => {
+  const tier = TIERS[state.tierKey];
+  if(state.index < tier.questions.length - 1){
+    state.index++;
+    renderQuestion();
+  } else {
+    finishTier();
+  }
+});
+
+function finishTier(){
+  el('progressFill').style.width = '100%';
+  const tier = TIERS[state.tierKey];
+  el('resultScore').innerHTML = `${state.score}<span>/${tier.questions.length}</span>`;
+
+  const ratio = state.score / tier.questions.length;
+  let msg;
+  if(ratio === 1) msg = 'ممتاز! فرّقت بين الصح والغلط في كل الأسئلة.';
+  else if(ratio >= 0.5) msg = 'كويس! فيه شوية نقط تستاهل مراجعة عشان الرادار يبقى أقوى.';
+  else msg = 'محتاج تراجع الأسئلة تاني — كل غلطة درس في التأكد قبل التصديق.';
+  el('resultMsg').textContent = msg;
+
+  showScreen('result');
+}
+
+el('retryBtn').addEventListener('click', () => startTier(state.tierKey));
+el('homeBtn').addEventListener('click', () => showScreen('start'));
+
+buildTierList();
+</script>
+
+</body>
+</html>

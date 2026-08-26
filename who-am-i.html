@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>من أنا؟ | الصح من الغلط</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#12151b; --line:#242832;
+    --ink:#eef1f6; --dim:#8b93a3;
+    --signal:#31d0aa; --noise:#ff3b5c; --scan:#00d4ff; --warn:#ffb020;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Tajawal',sans-serif; min-height:100vh; position:relative;}
+  body::before{content:""; position:fixed; inset:0; background:repeating-linear-gradient(180deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px); pointer-events:none; z-index:1;}
+  .app{position:relative; z-index:2; max-width:640px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding:28px 20px 40px;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:26px;}
+  .back{font-family:monospace; font-size:12px; color:var(--dim); text-decoration:none; border:1px solid var(--line); padding:6px 12px; border-radius:20px;}
+  .mark{font-family:'Cairo',sans-serif; font-weight:800; font-size:16px;}
+  .mark span{color:var(--scan);}
+
+  .round-tag{font-family:monospace; font-size:11px; color:var(--dim); letter-spacing:2px; margin-bottom:10px; display:block;}
+
+  .id-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:24px; margin-bottom:18px; text-align:center;
+  }
+  .id-eyebrow{font-family:monospace; font-size:11px; color:var(--scan); letter-spacing:3px; display:block; margin-bottom:14px;}
+  .id-placeholder{
+    font-family:'Cairo',sans-serif; font-weight:800; font-size:34px; letter-spacing:6px;
+    color: var(--line); user-select:none;
+  }
+  .id-placeholder.solved{color:var(--signal); letter-spacing:1px; font-size:24px;}
+
+  .cues{display:flex; flex-direction:column; gap:8px; margin-bottom:18px; min-height:10px;}
+  .cue-line{
+    font-size:14px; color:var(--ink); padding:12px 14px;
+    border-right:2px solid var(--scan); background:var(--panel); border-radius:0 8px 8px 0;
+    opacity:0; transform:translateY(-4px); animation:cueIn .3s forwards; line-height:1.8;
+  }
+  @keyframes cueIn{ to{opacity:1; transform:translateY(0);} }
+
+  .reveal-btn{
+    width:100%; padding:13px; border-radius:10px; border:1px dashed var(--line);
+    background:transparent; color:var(--dim); font-family:monospace; font-size:12.5px;
+    cursor:pointer; margin-bottom:22px;
+  }
+  .reveal-btn:hover{border-color:var(--scan); color:var(--scan);}
+  .reveal-btn[disabled]{opacity:.4; cursor:default;}
+
+  .guess-label{font-family:monospace; font-size:12px; color:var(--dim); letter-spacing:1px; margin-bottom:12px; display:block;}
+  .options{display:flex; flex-direction:column; gap:10px; margin-bottom:18px;}
+  .opt{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:14px 18px; text-align:right; font-size:15px; font-family:'Cairo',sans-serif; font-weight:700;
+    cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--scan);}
+  .opt.correct{border-color:var(--signal); background:rgba(49,208,170,0.12);}
+  .opt.wrong{border-color:var(--noise); background:rgba(255,59,92,0.1); animation:shake .35s;}
+  @keyframes shake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);}}
+  .opt[disabled]{cursor:default; pointer-events:none;}
+
+  .feedback{
+    padding:14px 16px; border-radius:10px; font-size:14px; line-height:1.85; display:none; margin-bottom:16px;
+  }
+  .feedback.show{display:block;}
+  .feedback.correct{background:rgba(49,208,170,0.08); border:1px solid var(--signal); color:var(--signal);}
+  .feedback.wrong{background:rgba(255,59,92,0.08); border:1px solid var(--noise); color:var(--noise);}
+
+  .score-chip{
+    font-family:monospace; font-size:11px; color:var(--warn); border:1px solid var(--warn);
+    padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:16px;
+  }
+
+  .btn{padding:14px; border-radius:12px; font-family:'Cairo',sans-serif; font-weight:800; font-size:15px; cursor:pointer; border:none; width:100%; display:none;}
+  .btn.show{display:block;}
+  .btn-primary{background:var(--scan); color:#04121a;}
+
+  .final-score{
+    font-family:'Cairo',sans-serif; font-weight:800; font-size:44px; text-align:center; margin:20px 0 8px;
+  }
+  .final-msg{text-align:center; color:var(--dim); font-size:14px; margin-bottom:24px;}
+
+  footer{margin-top:auto; padding-top:30px; text-align:center; color:var(--dim); font-size:12px; font-family:monospace;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <a class="back" href="lobby.html">← اللوبي</a>
+    <div class="mark">من <span>أنا؟</span></div>
+  </div>
+
+  <span class="round-tag" id="roundTag"></span>
+  <span class="score-chip" id="scoreChip"></span>
+
+  <div class="id-card">
+    <span class="id-eyebrow">هوية سرية</span>
+    <div class="id-placeholder" id="idPlaceholder">? ? ? ? ?</div>
+  </div>
+
+  <button class="reveal-btn" id="revealBtn">+ اكشف تلميح تاني</button>
+  <div class="cues" id="cuesList"></div>
+
+  <span class="guess-label" id="guessLabel">من أنا؟</span>
+  <div class="options" id="optionsList"></div>
+
+  <div class="feedback" id="feedbackBox"></div>
+  <button class="btn btn-primary" id="nextBtn">التالي</button>
+
+  <div id="finalScreen" style="display:none;">
+    <div class="final-score" id="finalScore"></div>
+    <p class="final-msg" id="finalMsg"></p>
+    <button class="btn btn-primary show" id="restartBtn">جولة جديدة</button>
+  </div>
+
+  <footer>من أنا؟ — الصح من الغلط</footer>
+</div>
+
+<script>
+/* =====================================================================
+   الأدوات — عدّل هنا بس
+   كل جولة: answer (اسم الأداة)، category (نوعها)، cues (تلميحات
+   بتتكشف بالترتيب من غير ما تنطق الاسم)، decoys (٣ أسماء تانية
+   لأدوات حقيقية تتحط كاختيارات خاطئة عشوائية)
+===================================================================== */
+const POOL = [
+  {
+    answer: "Claude",
+    category: "مساعد ذكاء اصطناعي",
+    cues: [
+      "أنا نموذج ذكاء اصطناعي بتستخدمني في كتابة النصوص الطويلة والترجمة.",
+      "بتستخدمني بكفاءة في تحليل الأبحاث الأكاديمية العميقة.",
+      "من صنع شركة Anthropic."
+    ]
+  },
+  {
+    answer: "ChatGPT",
+    category: "مساعد ذكاء اصطناعي",
+    cues: [
+      "أنا مساعد شامل بتستخدمني في كتابة النصوص وتوليد الأفكار الإبداعية.",
+      "بتستخدمني كمان في شرح وحل مشاكل البرمجة بكفاءة.",
+      "من صنع شركة OpenAI، واسمي بيرمز لـ 'Generative Pre-trained Transformer'."
+    ]
+  },
+  {
+    answer: "Gemini",
+    category: "مساعد ذكاء اصطناعي",
+    cues: [
+      "أنا مساعد ذكي متصل مباشرة بالإنترنت لقراءة الأخبار والمستجدات.",
+      "بتقدر تستخدمني في تحليل المستندات وتفسير الصور بدقة.",
+      "من صنع شركة Google."
+    ]
+  },
+  {
+    answer: "Copilot",
+    category: "مساعد ذكاء اصطناعي",
+    cues: [
+      "أنا أداة قوية مدمجة في برامج المكتب اللي بتستخدمها كل يوم.",
+      "بتشتغل بنماذج GPT-4 المتقدمة لتصميم الصور والبحث وتوليف الملفات.",
+      "من صنع شركة Microsoft."
+    ]
+  },
+  {
+    answer: "Notion",
+    category: "تنظيم وإنتاجية",
+    cues: [
+      "أنا مساحة عمل ذكية ومتكاملة بتستخدمها لتنظيم ملاحظاتك.",
+      "بتقدر كمان تبني فيا قواعد بيانات شخصية ودراسية وتخطط بيا مشاريع.",
+      "اسمي يعني 'ملاحظة' أو 'فكرة' بالإنجليزي."
+    ]
+  },
+  {
+    answer: "Google Calendar",
+    category: "تنظيم وإنتاجية",
+    cues: [
+      "أنا رفيقك في تنظيم وقتك الأسبوعي.",
+      "بتثبّت بيا مواعيد الامتحانات والمذاكرة والندوات.",
+      "اسمي فيه كلمة 'تقويم' بالإنجليزي، ومرتبط بشركة جوجل."
+    ]
+  },
+  {
+    answer: "Google Drive",
+    category: "تنظيم وإنتاجية",
+    cues: [
+      "أنا مساحة تخزين سحابية بأمان تام.",
+      "تقدر توصل لملفاتك اللي محفوظة عندي من أي جهاز في العالم.",
+      "اسمي فيه كلمة 'قرص' أو 'محرك' بالإنجليزي، ومرتبط بشركة جوجل."
+    ]
+  },
+  {
+    answer: "OneNote",
+    category: "تنظيم وإنتاجية",
+    cues: [
+      "أنا دفتر ملاحظات رقمي من مايكروسوفت.",
+      "بتستخدمني عشان تسجل محاضراتك ودروسك بطريقة منظمة وجميلة.",
+      "اسمي فيه كلمة 'ملاحظة' بالإنجليزي، وبأقسم لدفاتر وأقسام."
+    ]
+  },
+  {
+    answer: "Canva",
+    category: "تصميم وابتكار",
+    cues: [
+      "أنا المنصة الأسهل والأشهر لتصميم العروض التقديمية.",
+      "بتقدر تصمم بيا بوسترات وشعارات احترافية في دقائق من غير خبرة سابقة.",
+      "اسمي بسيط وسهل النطق، شبه اسم بنت."
+    ]
+  },
+  {
+    answer: "Figma",
+    category: "تصميم وابتكار",
+    cues: [
+      "أنا الأداة الاحترافية الأولى عالميًا لتصميم واجهات المواقع والتطبيقات.",
+      "بتخلي فريقك يشتغل على نفس التصميم في نفس اللحظة بالثانية.",
+      "اسمي قريب من كلمة 'شكل' أو 'رسمة' بالإنجليزي."
+    ]
+  },
+  {
+    answer: "Adobe Express",
+    category: "تصميم وابتكار",
+    cues: [
+      "أنا تطبيق تصميم سريع ومدعوم بالذكاء الاصطناعي لتعديل الصور.",
+      "بتقدر تصنع بيا فيديوهات سوشيال ميديا بنصوص وتصميمات مذهلة.",
+      "اسمي فيه كلمة شركة برامج التصميم الشهيرة، وكلمة تعني 'سريع'."
+    ]
+  },
+  {
+    answer: "Replit",
+    category: "برمجة وأكواد",
+    cues: [
+      "أنا منصة برمجة سحابية مثالية للعمل مباشرة من المتصفح.",
+      "تقدر تكتب وتشغّل أكوادك عندي فورًا من غير أي إعدادات تقنية صعبة.",
+      "اسمي مأخوذ من كلمة 'يكرر' أو 'يعيد التشغيل' بالإنجليزي."
+    ]
+  },
+  {
+    answer: "VS Code",
+    category: "برمجة وأكواد",
+    cues: [
+      "أنا محرر الأكواد الأقوى والأشهر جدًا من مايكروسوفت.",
+      "بدعم كل لغات البرمجة تقريبًا وعندي إضافات ذكية تسهّل مسيرتك البرمجية.",
+      "اسمي اختصار لـ 'استوديو الكود المرئي' بالإنجليزي."
+    ]
+  },
+  {
+    answer: "GitHub",
+    category: "برمجة وأكواد",
+    cues: [
+      "أنا شبكة المبرمجين الأولى عالميًا لحفظ ومشاركة المشاريع.",
+      "بتتعاون من خلالي مع زملائك على تطوير الأكواد وبناء معرض أعمالك.",
+      "اسمي فيه كلمة 'هَب' اللي تعني مركز أو محور بالإنجليزي."
+    ]
+  },
+  {
+    answer: "Duolingo",
+    category: "تعلم اللغات",
+    cues: [
+      "أنا تطبيق تعلم اللغات التفاعلي الممتع.",
+      "بحوّل دراسة اللغة إلى ألعاب يومية مسلية بنظام مستمر.",
+      "شعاري بومة خضرا مشهورة جدًا."
+    ]
+  },
+  {
+    answer: "ELSA Speak",
+    category: "تعلم اللغات",
+    cues: [
+      "أنا مساعد مدعوم بالذكاء الاصطناعي مخصص للنطق.",
+      "بحسّن نطقك للغة الإنجليزية ومخارج الحروف بالصوت الفوري.",
+      "اسمي يبدأ بحروف تبدو كاسم بنت."
+    ]
+  },
+  {
+    answer: "BBC Learning English",
+    category: "تعلم اللغات",
+    cues: [
+      "أنا منصة أكاديمية عريقة ومثالية لتقوية مهارات القراءة والاستماع.",
+      "بقدّم دروس صوتية قصيرة وممتازة لتنمية مفرداتك اللغوية.",
+      "اسمي فيه اسم هيئة إذاعية بريطانية شهيرة جدًا."
+    ]
+  }
+];
+
+const TOTAL_ROUNDS = 6;
+
+let rounds = [];
+let idx = 0;
+let cueStep = 0;
+let score = 0;
+let answered = false;
+const el = id => document.getElementById(id);
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildRounds(){
+  rounds = shuffle(POOL).slice(0, TOTAL_ROUNDS);
+}
+
+function render(){
+  answered = false;
+  cueStep = 0;
+  const r = rounds[idx];
+
+  el('roundTag').textContent = `ROUND_${String(idx+1).padStart(2,'0')} / ${rounds.length}`;
+  el('scoreChip').textContent = `النقاط: ${score}`;
+  el('idPlaceholder').className = 'id-placeholder';
+  el('idPlaceholder').textContent = r.category;
+
+  el('cuesList').innerHTML = '';
+  el('revealBtn').disabled = false;
+  el('revealBtn').textContent = '+ اكشف تلميح تاني';
+
+  const wrongPool = POOL.filter(p => p.answer !== r.answer).map(p => p.answer);
+  const decoys = shuffle(wrongPool).slice(0, 3);
+  const options = shuffle([r.answer, ...decoys]);
+
+  const optsWrap = el('optionsList');
+  optsWrap.innerHTML = '';
+  options.forEach(opt => {
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.textContent = opt;
+    div.addEventListener('click', () => choose(opt, div, r));
+    optsWrap.appendChild(div);
+  });
+
+  const fb = el('feedbackBox');
+  fb.className = 'feedback';
+  fb.textContent = '';
+  el('nextBtn').classList.remove('show');
+
+  // reveal first cue automatically
+  revealNextCue();
+}
+
+function revealNextCue(){
+  const r = rounds[idx];
+  if(cueStep >= r.cues.length) return;
+  const line = document.createElement('div');
+  line.className = 'cue-line';
+  line.textContent = r.cues[cueStep];
+  el('cuesList').appendChild(line);
+  cueStep++;
+  if(cueStep >= r.cues.length){
+    el('revealBtn').disabled = true;
+    el('revealBtn').textContent = 'كل التلميحات اتكشفت';
+  } else {
+    el('revealBtn').textContent = `+ اكشف تلميح تاني (${cueStep}/${r.cues.length})`;
+  }
+}
+
+el('revealBtn').addEventListener('click', revealNextCue);
+
+function choose(opt, div, r){
+  if(answered) return;
+  answered = true;
+
+  document.querySelectorAll('.opt').forEach(d => d.setAttribute('disabled', 'true'));
+
+  const isCorrect = opt === r.answer;
+  if(isCorrect){
+    div.classList.add('correct');
+    const points = Math.max(30 - (cueStep - 1) * 10, 10);
+    score += points;
+  } else {
+    div.classList.add('wrong');
+    document.querySelectorAll('.opt').forEach(d => {
+      if(d.textContent === r.answer) d.classList.add('correct');
+    });
+  }
+
+  el('idPlaceholder').textContent = r.answer;
+  el('idPlaceholder').classList.add('solved');
+  el('scoreChip').textContent = `النقاط: ${score}`;
+
+  const fb = el('feedbackBox');
+  fb.classList.add('show', isCorrect ? 'correct' : 'wrong');
+  fb.textContent = isCorrect
+    ? `صح! أنا ${r.answer}.`
+    : `للأسف، الإجابة الصح كانت ${r.answer}.`;
+
+  el('nextBtn').classList.add('show');
+}
+
+el('nextBtn').addEventListener('click', () => {
+  if(idx < rounds.length - 1){ idx++; render(); }
+  else { finish(); }
+});
+
+function finish(){
+  document.querySelectorAll('.round-tag, .score-chip, .id-card, .reveal-btn, .cues, .guess-label, .options, .feedback, #nextBtn')
+    .forEach(elm => elm.style.display = 'none');
+  el('finalScreen').style.display = 'block';
+  el('finalScore').textContent = `${score} نقطة`;
+  const ratio = score / (rounds.length * 30);
+  let msg;
+  if(ratio >= 0.8) msg = 'خبير أدوات رقمي! عرفت الأدوات من أول تلميح غالبًا.';
+  else if(ratio >= 0.4) msg = 'كويس، بس محتاج تتعرف أكتر على أدوات الإنتاجية والذكاء الاصطناعي.';
+  else msg = 'جرّب تاني! كل ما تعرف الأدوات دي أكتر، كل ما تستخدم التكنولوجيا صح.';
+  el('finalMsg').textContent = msg;
+}
+
+el('restartBtn').addEventListener('click', () => {
+  document.querySelectorAll('.round-tag, .score-chip, .id-card, .reveal-btn, .cues, .guess-label, .options, .feedback, #nextBtn')
+    .forEach(elm => elm.style.display = '');
+  el('finalScreen').style.display = 'none';
+  idx = 0; score = 0;
+  buildRounds();
+  render();
+});
+
+buildRounds();
+render();
+</script>
+</body>
+</html>
