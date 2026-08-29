@@ -521,6 +521,10 @@ function finishTier(){
   el('resultMsg').textContent = msg;
 
   showScreen('result');
+
+  if (typeof awardGamePoints === 'function') {
+    awardGamePoints(`quiz-${state.tierKey}`, state.score * 2);
+  }
 }
 
 el('retryBtn').addEventListener('click', () => startTier(state.tierKey));
@@ -528,6 +532,7 @@ el('homeBtn').addEventListener('click', () => showScreen('start'));
 
 buildTierList();
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </body>
 </html>

@@ -140,7 +140,10 @@
 
   <div class="brand">
     <div class="mark">الصح <span>من</span> الغلط</div>
-    <div class="badge">GAME LOBBY</div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span id="authStatus" class="badge"></span>
+      <div class="badge">GAME LOBBY</div>
+    </div>
   </div>
 
   <h1 class="hero-title">مش لعبة واحدة.<br>كل لعبة <span>زاوية مختلفة</span> لنفس الفكرة.</h1>
@@ -219,5 +222,7 @@ GAMES.forEach((g, i) => {
   grid.appendChild(card);
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </body>
 </html>

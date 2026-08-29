@@ -182,6 +182,7 @@ const CASES = [
 
 let idx = 0;
 let answered = false;
+let correctCount = 0;
 const el = id => document.getElementById(id);
 
 function render(){
@@ -237,15 +238,21 @@ function judge(choice){
   vr.classList.add('show', isCorrect ? 'correct' : 'incorrect');
   vr.textContent = (isCorrect ? 'حكم صح. ' : 'حكم غلط. ') + c.explain;
 
+  if (isCorrect) correctCount++;
   el('nextBtn').disabled = false;
 }
 
 el('btnRight').addEventListener('click', () => judge(true));
 el('btnWrong').addEventListener('click', () => judge(false));
 
-el('nextBtn').addEventListener('click', () => {
+el('nextBtn').addEventListener('click', async () => {
   if(idx < CASES.length - 1){ idx++; render(); }
-  else { window.location.href = 'lobby.html'; }
+  else {
+    if (typeof awardGamePoints === 'function') {
+      await awardGamePoints('investigation-room', correctCount * 4);
+    }
+    window.location.href = 'lobby.html';
+  }
 });
 el('prevBtn').addEventListener('click', () => {
   if(idx > 0){ idx--; render(); }
@@ -253,5 +260,7 @@ el('prevBtn').addEventListener('click', () => {
 
 render();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </body>
 </html>

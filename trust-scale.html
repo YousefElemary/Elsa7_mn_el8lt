@@ -177,6 +177,7 @@ const CASES = [
 let idx = 0;
 let cueStep = 0;
 let locked = false;
+let scaleScore = 0;
 const el = id => document.getElementById(id);
 
 function render(){
@@ -241,9 +242,11 @@ el('lockBtn').addEventListener('click', () => {
   if(dist === 0){
     level = 'good';
     text = `دقيق! المنطقة الصح كانت بين ${toArabicNum(lo)} و ${toArabicNum(hi)} بناءً على المؤشرات اللي كشفتها.`;
+    scaleScore += 5;
   } else if(dist <= 20){
     level = 'mid';
     text = `قريب. المنطقة الصح كانت بين ${toArabicNum(lo)} و ${toArabicNum(hi)} — راجع المؤشرات تاني المرة الجاية.`;
+    scaleScore += 2;
   } else {
     level = 'bad';
     text = `بعيد عن الصح. المنطقة الصح كانت بين ${toArabicNum(lo)} و ${toArabicNum(hi)} — جرّب تكشف كل المؤشرات قبل ما تقرر.`;
@@ -254,12 +257,19 @@ el('lockBtn').addEventListener('click', () => {
   el('nextBtn').classList.add('show');
 });
 
-el('nextBtn').addEventListener('click', () => {
+el('nextBtn').addEventListener('click', async () => {
   if(idx < CASES.length - 1){ idx++; render(); }
-  else { window.location.href = 'lobby.html'; }
+  else {
+    if (typeof awardGamePoints === 'function') {
+      await awardGamePoints('trust-scale', scaleScore);
+    }
+    window.location.href = 'lobby.html';
+  }
 });
 
 render();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </body>
 </html>

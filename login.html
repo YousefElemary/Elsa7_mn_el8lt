@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل الدخول | الصح من الغلط</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .auth-wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .auth-card{
+    width:100%; max-width:400px; padding:36px 30px;
+    background:var(--glass-bg); border:1px solid var(--glass-border);
+    border-radius:18px; backdrop-filter:blur(12px);
+  }
+  .auth-title{ font-size:1.5rem; font-weight:800; margin-bottom:6px; text-align:center; }
+  .auth-sub{ color:var(--text-muted); font-size:.9rem; text-align:center; margin-bottom:26px; }
+  .auth-field{ margin-bottom:16px; }
+  .auth-field label{ display:block; font-size:.85rem; margin-bottom:6px; color:var(--text-muted); }
+  .auth-field input{
+    width:100%; padding:12px 14px; border-radius:10px;
+    border:1px solid var(--glass-border); background:rgba(255,255,255,.04);
+    color:var(--text-main); font-family:var(--font-arabic); font-size:.95rem;
+  }
+  .auth-field input:focus{ outline:none; border-color:var(--accent-gold); }
+  .auth-btn{
+    width:100%; padding:13px; border:none; border-radius:10px;
+    background:var(--accent-gold); color:#0a0a0c; font-weight:800;
+    font-family:var(--font-arabic); font-size:.95rem; cursor:pointer; margin-top:6px;
+    transition:var(--transition-smooth);
+  }
+  .auth-btn:hover{ box-shadow:0 0 20px var(--glow-gold); }
+  .auth-toggle{ text-align:center; margin-top:20px; font-size:.85rem; color:var(--text-muted); }
+  .auth-toggle a{ color:var(--accent-gold); cursor:pointer; text-decoration:none; }
+  .auth-msg{ font-size:.85rem; text-align:center; margin-top:14px; min-height:18px; }
+  .auth-msg.error{ color:#ff6b6b; }
+  .auth-msg.success{ color:#31d0aa; }
+</style>
+</head>
+<body>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-title" id="formTitle">تسجيل الدخول</div>
+    <div class="auth-sub" id="formSub">ادخل بياناتك عشان تكسب نقط وتتابع تقدمك</div>
+
+    <div class="auth-field" id="nameField" style="display:none;">
+      <label>الاسم</label>
+      <input type="text" id="nameInput" placeholder="اسمك">
+    </div>
+    <div class="auth-field">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="emailInput" placeholder="example@mail.com">
+    </div>
+    <div class="auth-field">
+      <label>كلمة المرور</label>
+      <input type="password" id="passwordInput" placeholder="••••••••">
+    </div>
+
+    <button class="auth-btn" id="submitBtn">دخول</button>
+    <div class="auth-msg" id="authMsg"></div>
+
+    <div class="auth-toggle">
+      <span id="toggleText">مش عندك حساب؟</span>
+      <a id="toggleLink">سجّل دلوقتي</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script>
+let mode = "login"; // or "signup"
+
+const el = id => document.getElementById(id);
+
+el('toggleLink').addEventListener('click', () => {
+  mode = mode === 'login' ? 'signup' : 'login';
+  const isSignup = mode === 'signup';
+  el('formTitle').textContent = isSignup ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
+  el('formSub').textContent = isSignup ? 'سجّل عشان تبدأ تكسب نقط' : 'ادخل بياناتك عشان تكسب نقط وتتابع تقدمك';
+  el('nameField').style.display = isSignup ? 'block' : 'none';
+  el('submitBtn').textContent = isSignup ? 'إنشاء الحساب' : 'دخول';
+  el('toggleText').textContent = isSignup ? 'عندك حساب بالفعل؟' : 'مش عندك حساب؟';
+  el('toggleLink').textContent = isSignup ? 'سجّل دخولك' : 'سجّل دلوقتي';
+  el('authMsg').textContent = '';
+});
+
+el('submitBtn').addEventListener('click', async () => {
+  const email = el('emailInput').value.trim();
+  const password = el('passwordInput').value;
+  const msg = el('authMsg');
+  msg.className = 'auth-msg';
+
+  if (!email || !password) {
+    msg.classList.add('error');
+    msg.textContent = 'من فضلك املأ البريد وكلمة المرور';
+    return;
+  }
+
+  el('submitBtn').disabled = true;
+  el('submitBtn').textContent = '...جاري التحميل';
+
+  if (mode === 'signup') {
+    const name = el('nameInput').value.trim();
+    const { error } = await signUpUser(email, password, name);
+    if (error) {
+      msg.classList.add('error');
+      msg.textContent = error.message;
+      el('submitBtn').disabled = false;
+      el('submitBtn').textContent = 'إنشاء الحساب';
+    } else {
+      msg.classList.add('success');
+      msg.textContent = 'اتسجل بنجاح! ممكن يطلب منك تأكيد البريد الإلكتروني.';
+      setTimeout(() => window.location.href = 'lobby.html', 1500);
+    }
+  } else {
+    const { error } = await signInUser(email, password);
+    if (error) {
+      msg.classList.add('error');
+      msg.textContent = 'بيانات غلط، حاول تاني';
+      el('submitBtn').disabled = false;
+      el('submitBtn').textContent = 'دخول';
+    } else {
+      window.location.href = 'account.html';
+    }
+  }
+});
+</script>
+</body>
+</html>

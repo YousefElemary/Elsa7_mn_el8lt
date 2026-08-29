@@ -57,6 +57,8 @@
                 <a href="volunteer.html">التطوع</a>
                 <a href="partnerships.html">الشراكات</a>
                 <a href="courses.html">كورساتنا</a>
+                <a href="lobby.html">الألعاب</a>
+                <span id="authStatus"></span>
             </div>
 
             <button class="mobile-menu-btn mobile-only" id="mobile-menu-btn" aria-label="Toggle Menu">
@@ -71,6 +73,8 @@
             <a href="volunteer.html" class="mobile-link">التطوع</a>
             <a href="partnerships.html" class="mobile-link">الشراكات</a>
             <a href="courses.html" class="mobile-link">كورساتنا</a>
+            <a href="lobby.html" class="mobile-link">الألعاب</a>
+            <a href="account.html" class="mobile-link">حسابي</a>
         </div>
     </nav>
 
@@ -363,6 +367,33 @@
                             <h3>جمعية ابناء دنفيق</h3>
                         </div>
                     </div>
+
+                    <div class="team-card" style="justify-content: flex-start; gap: 25px;">
+                        <div class="member-avatar" style="margin-left: 0; margin-right: 30px;">
+                            <img src="images/partner-hsp.jpg" alt="بوابة العلوم الإنسانية" class="avatar-img">
+                        </div>
+                        <div class="member-info" style="text-align: right;">
+                            <h3>بوابة العلوم الإنسانية</h3>
+                        </div>
+                    </div>
+
+                    <div class="team-card" style="justify-content: flex-start; gap: 25px;">
+                        <div class="member-avatar" style="margin-left: 0; margin-right: 30px;">
+                            <img src="images/partner-development-org.jpg" alt="الهيئة العالمية للتنمية البشرية والثقافة" class="avatar-img">
+                        </div>
+                        <div class="member-info" style="text-align: right;">
+                            <h3>الهيئة العالمية للتنمية البشرية والثقافة والسلام</h3>
+                        </div>
+                    </div>
+
+                    <div class="team-card" style="justify-content: flex-start; gap: 25px;">
+                        <div class="member-avatar" style="margin-left: 0; margin-right: 30px;">
+                            <img src="images/partner-human-sciences.jpg" alt="مؤسسة العلوم الإنسانية" class="avatar-img">
+                        </div>
+                        <div class="member-info" style="text-align: right;">
+                            <h3>مؤسسة العلوم الإنسانية</h3>
+                        </div>
+                    </div>
                 </div>
 
                     <a href="https://forms.gle/zBfHjJ981Xfo7Z52A" class="cta-btn" target="_blank" rel="noopener noreferrer">هل تريد أن تقوم معنا بشراكة؟</a>
@@ -378,5 +409,7 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
 </body>
 </html>

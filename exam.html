@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>امتحانات الكورسات | الصح من الغلط</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .exam-wrap{ max-width:640px; margin:0 auto; padding:50px 20px; }
+  .exam-card{ background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:18px; padding:30px; }
+  .exam-title{ font-size:1.3rem; font-weight:800; margin-bottom:6px; }
+  .exam-sub{ color:var(--text-muted); font-size:.9rem; margin-bottom:20px; }
+  .exam-q{ margin-bottom:26px; }
+  .exam-q-text{ font-weight:700; margin-bottom:12px; }
+  .exam-opt{
+    display:block; padding:12px 14px; margin-bottom:8px; border-radius:10px;
+    border:1px solid var(--glass-border); background:rgba(255,255,255,.03);
+    cursor:pointer; font-size:.9rem; transition:var(--transition-smooth);
+  }
+  .exam-opt:hover{ border-color:var(--accent-gold); }
+  .exam-opt.selected{ border-color:var(--accent-gold); background:rgba(212,175,55,.12); }
+  .exam-opt input{ margin-left:10px; }
+  .exam-submit{
+    width:100%; padding:13px; border:none; border-radius:10px;
+    background:var(--accent-gold); color:#0a0a0c; font-weight:800;
+    font-family:var(--font-arabic); font-size:.95rem; cursor:pointer;
+  }
+  .exam-result{ text-align:center; }
+  .exam-result .big{ font-size:2.4rem; font-weight:800; margin:14px 0; }
+  .exam-result.pass .big{ color:#31d0aa; }
+  .exam-result.fail .big{ color:#ff6b6b; }
+  .exam-actions{ display:flex; gap:10px; margin-top:20px; justify-content:center; flex-wrap:wrap; }
+  .exam-actions a, .exam-actions button{
+    padding:10px 20px; border-radius:10px; text-decoration:none; font-family:var(--font-arabic);
+    border:1px solid var(--glass-border); background:transparent; color:var(--text-main); cursor:pointer;
+  }
+  .module-list{ display:flex; flex-direction:column; gap:10px; }
+  .module-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 16px; border-radius:12px; border:1px solid var(--glass-border);
+    background:rgba(255,255,255,.02); text-decoration:none; color:var(--text-main);
+    transition:var(--transition-smooth);
+  }
+  .module-row:hover{ border-color:var(--accent-gold); }
+  .module-name{ font-size:.92rem; font-weight:600; }
+  .module-status{ font-size:.78rem; padding:4px 10px; border-radius:20px; white-space:nowrap; }
+  .module-status.passed{ background:rgba(49,208,170,.15); color:#31d0aa; }
+  .module-status.pending{ background:rgba(255,255,255,.06); color:var(--text-muted); }
+  .provider-progress{ text-align:center; margin-bottom:22px; color:var(--text-muted); font-size:.9rem; }
+</style>
+</head>
+<body class="profile-page-body">
+
+<nav class="navbar" id="navbar">
+  <div class="navbar-container">
+    <a href="index.html" class="navbar-logo">الصح <span class="accent-gold">من</span> الغلط</a>
+  </div>
+</nav>
+
+<div class="exam-wrap">
+  <div class="exam-card" id="examCard">
+    <div class="exam-sub">جاري التحميل...</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script>
+/* =====================================================================================
+   بنك الامتحانات — منظم حسب مزود الكورس (provider) وبعدين كل موديول/كورس فرعي جواه
+   كل امتحان: title, points, questions[{q, options[], correct}]
+   الأسئلة دي مبنية على وصف المحتوى الرسمي المتاح لكل كورس، ومقترح تراجعوها/تزودوا فيها
+   بمحتوى أدق لما تشوفوا الكورس بالتفصيل بنفسكم
+===================================================================================== */
+const POINTS_PER_MODULE = 15;
+
+const PROVIDERS = {
+  google: {
+    label: "Google AI Essentials",
+    modules: {
+      "intro-to-ai": {
+        title: "الوحدة 1: مقدمة في الذكاء الاصطناعي",
+        questions: [
+          { q: "الذكاء الاصطناعي التوليدي (Generative AI) بيعتمد على إيه بالأساس؟", options: ["قواعد مبرمجة يدويًا لكل حالة", "التعلم من كميات كبيرة من البيانات وتوليد محتوى جديد", "نسخ محتوى موجود حرفيًا", "لا شيء مما سبق"], correct: 1 },
+          { q: "من أهم حدود أدوات الـ AI الحالية؟", options: ["مينفعش تستخدمها في أي حاجة", "ممكن تدي معلومة غلط بثقة (hallucination)", "بطيئة جدًا في كل شيء", "مفيهاش حدود خالص"], correct: 1 },
+          { q: "في استخدام AI بالشغل، مين المفروض يفضل صاحب القرار النهائي؟", options: ["الأداة نفسها", "الإنسان اللي بيستخدمها", "أي حد تاني غير المستخدم", "مفيش داعي لقرار نهائي"], correct: 1 }
+        ]
+      },
+      "productivity": {
+        title: "الوحدة 2: رفع الإنتاجية بأدوات AI",
+        questions: [
+          { q: "دور الإنسان الأساسي مع أدوات الـ AI في الشغل إيه؟", options: ["يسلّم القرار بالكامل للأداة", "يوجّه المهمة ويراجع النتيجة", "يتجاهل الأداة تمامًا", "يستخدمها بس في المهام الشخصية"], correct: 1 },
+          { q: "مثال منطقي على مهمة شغل ممكن الـ AI يسرّعها؟", options: ["اتخاذ قرار توظيف نهائي بمفرده", "تلخيص تقرير طويل أو صياغة مسودة إيميل", "توقيع عقود رسمية", "تحديد راتب موظف"], correct: 1 },
+          { q: "قبل ما تعتمد على مخرج AI في مهمة شغل مهمة، إيه أهم خطوة؟", options: ["تستخدمه على طول من غير مراجعة", "تراجعه وتتأكد من دقته", "تحذفه فورًا", "تشاركه من غير ما تشوفه"], correct: 1 }
+        ]
+      },
+      "prompting": {
+        title: "الوحدة 3: فن هندسة البرومبت",
+        questions: [
+          { q: "البرومبت الفعال بيحتوي عادةً على إيه؟", options: ["كلام عام من غير تفاصيل", "سياق واضح ومهمة محددة والشكل المطلوب للرد", "أسئلة كتير مبعثرة في نفس الوقت", "لا شيء، أي صياغة تدي نفس النتيجة"], correct: 1 },
+          { q: "ليه التحديد في البرومبت بيحسّن جودة النتيجة؟", options: ["لأنه بيقلل خيارات النموذج العشوائية وبيوجهه للمطلوب بدقة", "مفيش تأثير للتحديد أصلاً", "لأنه بيخلي الرد أقصر دايمًا", "لأنه بيمنع أي أخطاء نهائيًا"], correct: 0 },
+          { q: "لو الرد اللي جالك من الـ AI مش مظبوط، إيه أنسب رد فعل؟", options: ["تصدقه زي ما هو", "تعدّل البرومبت وتوضّح أكتر وتجرب تاني", "توقف استخدام الأداة نهائيًا", "تنشره زي ما هو"], correct: 1 }
+        ]
+      },
+      "responsible-ai": {
+        title: "الوحدة 4: استخدام الـ AI بمسؤولية",
+        questions: [
+          { q: "من مصادر التحيز (bias) في أدوات الـ AI؟", options: ["البيانات اللي اتدرب عليها النموذج", "لون واجهة البرنامج", "سرعة الإنترنت", "نوع الجهاز المستخدم"], correct: 0 },
+          { q: "الاستخدام المسؤول للـ AI يعني إيه؟", options: ["تصدق أي رد فورًا", "تتحقق من الدقة وتتجنب أي ضرر ممكن ينتج عن الاستخدام", "تستخدمه في كل قرار من غير مراجعة", "تتجاهل أي تحذير يظهر"], correct: 1 },
+          { q: "ليه مهم تراجع مخرجات الـ AI قبل ما تشاركها مع ناس تانية؟", options: ["عشان تتأكد إنها دقيقة ومناسبة وملهاش أضرار", "مفيش سبب حقيقي", "عشان تاخد وقت أطول بس", "عشان القانون بيمنع الشير خالص"], correct: 0 }
+        ]
+      },
+      "stay-ahead": {
+        title: "الوحدة 5: مواكبة تطورات الـ AI",
+        questions: [
+          { q: "إزاي تقدر تفضل مواكب لتطورات الـ AI؟", options: ["تتجاهل أي جديد", "تجرب أدوات جديدة وتتابع مصادر موثوقة باستمرار", "توقف التعلم بعد أول كورس", "تعتمد على معلومة واحدة قديمة"], correct: 1 },
+          { q: "ليه الاستمرار في التعلم مهم في مجال الـ AI تحديدًا؟", options: ["لأن المجال بيتغير وبيتطور بسرعة كبيرة", "لأن المجال ثابت ومبيتغيرش خالص", "مش مهم فعلاً", "لأنه إجباري قانونيًا بس"], correct: 0 },
+          { q: "مثال على فرصة مستقبلية ممكن تستفيد منها من تطور أدوات الـ AI في شغلك؟", options: ["أتمتة مهام روتينية عشان تركز على شغل أعمق", "الاستغناء عن التفكير خالص", "تجاهل أي تدريب جديد", "رفض أي أداة جديدة تظهر"], correct: 0 }
+        ]
+      }
+    }
+  },
+
+  claude: {
+    label: "Claude Academy",
+    modules: {
+      "claude-101": {
+        title: "Claude 101",
+        questions: [
+          { q: "كورس Claude 101 بيغطي إيه بالأساس؟", options: ["استخدام Claude في الشغل اليومي: محادثات، مشاريع، Artifacts", "برمجة نماذج AI من الصفر", "تصميم شرائح PowerPoint فقط", "لا شيء مما سبق"], correct: 0 },
+          { q: "الـ Artifacts في Claude بتُستخدم لإيه؟", options: ["عرض/تعديل محتوى (زي كود أو مستند) بشكل منفصل عن سياق المحادثة", "حذف المحادثات القديمة", "تغيير لغة الواجهة", "لا علاقة لها بالمحتوى"], correct: 0 },
+          { q: "ليه مهم تكتب سياق واضح لما تبدأ محادثة مع Claude؟", options: ["عشان الرد يكون أدق وأقرب لاحتياجك الفعلي", "مفيش فرق خالص", "عشان يبطئ الرد", "عشان يمنعك من الاستمرار"], correct: 0 }
+        ]
+      },
+      "claude-code-101": {
+        title: "Claude Code 101",
+        questions: [
+          { q: "Claude Code هو إيه أساسًا؟", options: ["أداة برمجة agentic بتشتغل في الـ terminal وتنفذ مهام برمجية", "متصفح إنترنت", "برنامج تصميم جرافيك", "أداة تحرير فيديو"], correct: 0 },
+          { q: "من فوائد استخدام Claude Code في مشروع برمجي؟", options: ["تنفيذ مهام برمجية متعددة الخطوات بشكل شبه تلقائي", "منع أي تعديل في الكود نهائيًا", "استبدال الـ Git بالكامل", "لا فايدة حقيقية"], correct: 0 },
+          { q: "الفرق الأساسي بين Claude Code ومحادثة شات عادية مع Claude؟", options: ["Claude Code بيقدر يقرأ وينفذ ويعدل ملفات فعلية في مشروعك", "مفيش فرق خالص", "الشات بس بيقدر يكتب كود", "Claude Code بيشتغل بدون أي تعليمات من المستخدم"], correct: 0 }
+        ]
+      },
+      "claude-code-in-action": {
+        title: "Claude Code in Action",
+        questions: [
+          { q: "إيه معنى تشغيل \"جلسة hands-off\" طويلة في Claude Code؟", options: ["تسيب Claude ينفذ مهام متتابعة من غير تدخل مستمر منك", "تراقب كل سطر كود بنفسك لحظة بلحظة", "تشغل الأداة من غير أي تعليمات إطلاقًا", "تمنع Claude من تنفيذ أي أمر"], correct: 0 },
+          { q: "ليه مهم تتحقق (verify) من شغل Claude Code بعد ما يخلص مهمة طويلة؟", options: ["عشان تتأكد إن النتيجة صح ومفيش أخطاء اتراكمت", "مش مهم، النتيجة دايمًا صح", "عشان تاخد وقت أطول بس", "عشان تمسح الشغل بعدها"], correct: 0 },
+          { q: "من عناصر التحكم اللي بتساعدك توجّه Claude Code صح أثناء الشغل؟", options: ["الإعدادات والتوجيه (steer/configure) الواضح للمهمة", "تجاهل أي إعدادات", "غلق الأداة فورًا", "لا يوجد أي تحكم ممكن"], correct: 0 }
+        ]
+      },
+      "claude-platform-101": {
+        title: "Claude Platform 101",
+        questions: [
+          { q: "الفرق بين استخدام Claude من الشات العادي واستخدامه عن طريق الـ Platform/API؟", options: ["الـ Platform بتسمح للمطورين يدمجوا Claude جوه تطبيقاتهم الخاصة برمجيًا", "مفيش فرق خالص", "الشات بس هو المتاح للمطورين", "الـ API بس للصور"], correct: 0 },
+          { q: "ليه المطورين بيستخدموا Claude Platform بدل الشات بس؟", options: ["عشان يبنوا تطبيقات وميزات مخصصة تستخدم Claude برمجيًا", "لأن الشات مش شغال أصلاً", "لأنه أرخص دايمًا بدون استثناء", "لا يوجد سبب حقيقي"], correct: 0 },
+          { q: "من الحاجات الأساسية المفروض تعرفها قبل ما تبني على الـ API؟", options: ["أساسيات إرسال الطلبات والتعامل مع الردود والمفاتيح (API keys)", "تصميم الشعار بس", "لغة الـ HTML فقط", "لا داعي لأي معرفة تقنية"], correct: 0 }
+        ]
+      },
+      "building-with-api": {
+        title: "Building with the Claude API",
+        questions: [
+          { q: "مصطلح \"Tool use\" في سياق الـ Claude API بيعني إيه؟", options: ["قدرة النموذج على استدعاء أدوات/functions خارجية أثناء الرد", "استخدام الماوس والكيبورد بس", "تغيير شكل الواجهة", "لا علاقة له بالـ API"], correct: 0 },
+          { q: "RAG اختصار لإيه وبيُستخدم لإيه؟", options: ["Retrieval-Augmented Generation، بيدي للنموذج معلومات خارجية وقت الرد", "نوع من أنواع الشاشات", "طريقة لتشفير الملفات", "لا علاقة له بالنماذج اللغوية"], correct: 0 },
+          { q: "MCP بيسهّل إيه في التطبيقات المبنية على Claude؟", options: ["ربط Claude بأدوات وخدمات خارجية بشكل موحّد", "تسريع الإنترنت", "تصميم الألوان", "حذف البيانات تلقائيًا"], correct: 0 }
+        ]
+      },
+      "claude-bedrock": {
+        title: "Claude with Amazon Bedrock",
+        questions: [
+          { q: "إيه فايدة استخدام Claude من خلال Amazon Bedrock بدل الاتصال المباشر بالـ API؟", options: ["دمج أسهل مع بنية AWS الموجودة أصلاً في الشركة", "بيمنع استخدام أي أداة تانية", "بيلغي الحاجة لأي prompt", "لا فايدة حقيقية"], correct: 0 },
+          { q: "مين المسؤول عن جزء كبير من البنية التحتية والاستضافة لما تستخدم Claude عبر Bedrock؟", options: ["AWS", "المستخدم بنفسه بالكامل", "لا أحد", "شركة تصنيع الأجهزة"], correct: 0 },
+          { q: "من مميزات دمج Claude مع بيئة AWS موجودة أصلاً في شركة؟", options: ["سهولة التكامل مع خدمات وأنظمة الشركة الحالية", "إلغاء الحاجة لأي أمان", "منع أي استخدام تجاري", "تقليل جودة الردود عمدًا"], correct: 0 }
+        ]
+      },
+      "claude-vertex": {
+        title: "Claude with Google Cloud's Vertex AI",
+        questions: [
+          { q: "زي Bedrock، إيه دور Vertex AI بالنسبة لموديلات Claude؟", options: ["منصة سحابية بديلة للوصول لـ Claude ودمجه في تطبيقات المؤسسة", "برنامج تحرير فيديو", "أداة تصميم واجهات فقط", "لا علاقة له بـ Claude"], correct: 0 },
+          { q: "ليه شركة مستخدمة Google Cloud أصلاً ممكن تفضّل Vertex AI على الاتصال المباشر؟", options: ["عشان تستفيد من التكامل مع أدوات وبنية Google Cloud الموجودة", "لأنه الخيار الوحيد المتاح إطلاقًا", "لأنه مجاني دايمًا لأي حجم استخدام", "لا سبب حقيقي"], correct: 0 },
+          { q: "من عناصر بناء تطبيق إنتاجي على Claude عبر Vertex AI؟", options: ["Prompting, tool use, RAG, agents", "تصميم شعار الشركة فقط", "كتابة عقود قانونية فقط", "لا شيء من التقنيات دي مطلوب"], correct: 0 }
+        ]
+      },
+      "ai-fluency-foundations": {
+        title: "AI Fluency: Framework & Foundations",
+        questions: [
+          { q: "إطار الـ 4D اللي بيتكلم عنه الكورس بيتكون من إيه؟", options: ["Delegation, Description, Discernment, Diligence", "Design, Data, Deploy, Debug", "Discovery, Development, Delivery, Documentation", "لا شيء مما سبق"], correct: 0 },
+          { q: "\"Discernment\" في الإطار ده بيعني إيه؟", options: ["الحكم النقدي على مخرجات الـ AI قبل قبولها", "تجاهل مخرجات الـ AI تمامًا", "قبول أي رد من غير مراجعة", "حذف المحادثة بعد كل رد"], correct: 0 },
+          { q: "ليه \"Diligence\" (الحرص والمتابعة) عنصر مهم في التعامل مع الـ AI؟", options: ["عشان تتابع وتتأكد من جودة ودقة النتيجة باستمرار", "مش مهم خالص", "عشان تاخد وقت أطول بس من غير فايدة", "عشان تقلل استخدامك للأداة للصفر"], correct: 0 }
+        ]
+      },
+      "ai-capabilities-limitations": {
+        title: "AI Capabilities and Limitations",
+        questions: [
+          { q: "النموذج اللغوي الكبير (LLM) بيشتغل أساسًا إزاي؟", options: ["بيتوقع الكلمة/الرمز الجاي بناءً على السياق اللي قبله", "بيبحث في الإنترنت لحظيًا لكل سؤال", "بينسخ إجابات جاهزة من قاعدة بيانات ثابتة", "بيفهم زي الإنسان تمامًا"], correct: 0 },
+          { q: "من حدود \"working memory\" عند نموذج زي Claude؟", options: ["محدودة بحجم الـ context window المتاح في المحادثة", "غير محدودة إطلاقًا", "بتتراكم للأبد في كل محادثة", "لا علاقة لها بالمحادثة"], correct: 0 },
+          { q: "\"Steerability\" في سياق النماذج اللغوية معناها إيه؟", options: ["قد إيه تقدر توجّه سلوك النموذج بالتعليمات اللي بتديهاله", "سرعة استجابة السيرفر", "حجم النموذج بالميجابايت", "لا علاقة له بالتعليمات"], correct: 0 }
+        ]
+      },
+      "agent-skills": {
+        title: "Introduction to Agent Skills",
+        questions: [
+          { q: "الـ \"Skills\" في Claude Code هي إيه؟", options: ["تعليمات قابلة لإعادة الاستخدام (غالبًا Markdown) يطبقها Claude تلقائيًا على المهام المناسبة", "برامج تشغيل خارجية منفصلة تمامًا", "ملفات صوتية", "إعدادات الشبكة فقط"], correct: 0 },
+          { q: "إيه فايدة مشاركة Skill مع باقي أعضاء الفريق؟", options: ["توحيد طريقة تنفيذ المهام المتكررة بين الكل", "منع أي حد من استخدامها غيرك", "تبطيء أداء Claude عمدًا", "لا فايدة حقيقية"], correct: 0 },
+          { q: "امتى Claude بيقرر يستخدم Skill معينة أثناء الشغل؟", options: ["لما تكون المهمة الحالية مطابقة لوصف الـ Skill المسجلة", "بشكل عشوائي تمامًا", "أبدًا من غير أمر يدوي صريح", "فقط مرة واحدة في اليوم"], correct: 0 }
+        ]
+      },
+      "claude-cowork": {
+        title: "Introduction to Claude Cowork",
+        questions: [
+          { q: "Claude Cowork بيسمحلك بإيه بالأساس؟", options: ["تفويض مهام متعددة الخطوات لـ Claude والحصول على نتيجة نهائية جاهزة", "تحرير الصور فقط", "إرسال إيميلات تلقائيًا بدون أي إشراف", "لا شيء من هذا"], correct: 0 },
+          { q: "إيه دور الـ \"plugins\" جوه Claude Cowork؟", options: ["تزود Claude بأدوات إضافية للبحث، المستندات، أو المتصفح أثناء تنفيذ المهمة", "تغيير لون الواجهة بس", "حذف المهام المنجزة تلقائيًا", "لا دور حقيقي لها"], correct: 0 },
+          { q: "ليه إعطاء سياق واضح لمساحة العمل (workspace) مهم في Cowork؟", options: ["عشان النتائج تكون أدق وأقرب للمطلوب فعلاً", "مفيش تأثير للسياق إطلاقًا", "عشان يبطئ التنفيذ فقط", "عشان يمنع أي تنفيذ للمهمة"], correct: 0 }
+        ]
+      },
+      "intro-mcp": {
+        title: "Introduction to Model Context Protocol",
+        questions: [
+          { q: "الـ MCP بيربط Claude بإيه؟", options: ["خدمات وأنظمة وأدوات خارجية بشكل موحّد", "شبكة الكهرباء", "لوحة المفاتيح فقط", "لا شيء خارجي"], correct: 0 },
+          { q: "من العناصر الأساسية الثلاثة في بروتوكول MCP؟", options: ["Tools, resources, prompts", "Colors, fonts, sizes", "CPU, RAM, disk", "Login, logout, signup"], correct: 0 },
+          { q: "ليه بروتوكول موحّد زي MCP مفيد بدل عمل حل مخصص لكل أداة على حدة؟", options: ["بيوحّد طريقة الربط ويقلل التكرار والتعقيد", "بيبطئ عملية الربط عمدًا", "بيمنع أي ربط جديد", "لا فايدة حقيقية"], correct: 0 }
+        ]
+      },
+      "mcp-advanced": {
+        title: "Model Context Protocol: Advanced Topics",
+        questions: [
+          { q: "\"Sampling\" في MCP بيسمح بإيه؟", options: ["إن الـ MCP server يطلب من النموذج توليد رد أثناء تنفيذ عملية معينة", "حذف الرسائل القديمة فقط", "تغيير سرعة الإنترنت", "لا علاقة له بالنماذج"], correct: 0 },
+          { q: "إيه فايدة الـ \"notifications\" في MCP servers؟", options: ["إبلاغ العميل (client) بتحديثات أو تغييرات أثناء التنفيذ", "تشغيل صوت تنبيه فقط بدون بيانات", "منع أي اتصال جديد", "لا فايدة تقنية حقيقية"], correct: 0 },
+          { q: "ليه المواضيع دي (sampling, notifications, roots) مهمة في بناء MCP servers للإنتاج؟", options: ["لأنها أنماط تنفيذ متقدمة لازمة لتشغيل موثوق وقابل للتوسع", "لأنها اختيارية تمامًا ومالهاش تأثير", "لأنها بتقلل الأمان عمدًا", "لا علاقة لها بجودة الـ server"], correct: 0 }
+        ]
+      },
+      "subagents": {
+        title: "Introduction to Subagents",
+        questions: [
+          { q: "الـ subagents بتساعد في إيه؟", options: ["تقسيم مهمة معقدة على أجزاء أصغر يتم تنفيذها بشكل متوازٍ أو منظم", "حذف كل المهام فورًا", "منع أي تنفيذ متوازٍ", "تبطيء التنفيذ عمدًا"], correct: 0 },
+          { q: "ليه التنسيق (orchestration) بين الـ subagents مهم؟", options: ["عشان النتائج الجزئية تتجمع بشكل صحيح ومتسق في النهاية", "مش مهم، كل subagent مستقل تمامًا وبلا تنسيق", "عشان يبطئ العملية فقط", "عشان يزود الأخطاء عمدًا"], correct: 0 },
+          { q: "مثال منطقي على مهمة مناسبة للتقسيم على subagents؟", options: ["بحث معقد بيحتاج جمع معلومات من مصادر متعددة في نفس الوقت", "كتابة كلمة واحدة بسيطة", "الرد على تحية سريعة", "لا يوجد مثال مناسب"], correct: 0 }
+        ]
+      },
+      "enterprise-deploy": {
+        title: "Deploying Claude Enterprise with Confidence",
+        questions: [
+          { q: "من ضمن القرارات الخمس الأساسية اللي الكورس بيغطيها لنشر Claude في مؤسسة؟", options: ["Structure & Identity, Access, Governance, Spend, Visibility", "الألوان، الخطوط، الشعار، الصور، الفيديوهات", "التسويق، المبيعات، الدعم، الشحن، الفواتير", "لا شيء مما سبق"], correct: 0 },
+          { q: "ليه \"Visibility\" قرار مهم عند نشر Claude على مستوى مؤسسة كاملة؟", options: ["عشان تقدر تراقب وتفهم إزاي بيتم استخدام الأداة داخل الشركة", "مالوش أي تأثير عملي", "عشان يبطئ الاستخدام فقط", "عشان يمنع أي موظف من الاستخدام"], correct: 0 },
+          { q: "\"Spend\" كقرار بيتعلق بإيه في رحلة نشر Claude Enterprise؟", options: ["إدارة وتخطيط الإنفاق والتكلفة المرتبطة بالاستخدام", "اختيار ألوان الواجهة", "تحديد أسماء الموظفين", "لا علاقة له بالتكلفة إطلاقًا"], correct: 0 }
+        ]
+      },
+      "teaching-ai-fluency": {
+        title: "Teaching AI Fluency",
+        questions: [
+          { q: "الكورس ده موجّه لمين بالأساس؟", options: ["أعضاء هيئة تدريس ومصممي مناهج تعليمية", "مطوري ألعاب فقط", "شركات الشحن", "لا أحد تحديدًا"], correct: 0 },
+          { q: "الكورس بيساعد المدرّس يعمل إيه في التقييم مع وجود أدوات AI؟", options: ["يصمم أساليب تقييم وواجبات تراعي وجود أدوات الـ AI", "يمنع أي استخدام للتكنولوجيا في الفصل نهائيًا", "يلغي الامتحانات كلها", "لا علاقة له بالتقييم"], correct: 0 },
+          { q: "ليه تصميم الواجبات محتاج يتغيّر مع انتشار أدوات الـ AI؟", options: ["عشان يقيس فعلاً فهم الطالب مش بس قدرته على استخدام أداة", "مش لازم يتغير خالص", "عشان يبقى أسهل بشكل عشوائي", "لا سبب تعليمي حقيقي"], correct: 0 }
+        ]
+      },
+      "ai-fluency-builders": {
+        title: "AI Fluency for Builders",
+        questions: [
+          { q: "الكورس ده بيركّز على مين بالتحديد؟", options: ["الأشخاص اللي بيبنوا منتجات أو حلول باستخدام أدوات الـ AI", "المستهلك العادي بس", "شركات التوصيل فقط", "لا أحد تحديدًا"], correct: 0 },
+          { q: "إيه معنى \"تملّك المسار الكامل من المشكلة للحل\" حتى مع استخدام AI؟", options: ["إنك تفضل مسؤول عن الفهم والقرار والجودة النهائية مش بس تنفيذ الأداة", "إنك تسيب الأداة تقرر كل حاجة بدالك", "إنك تتجاهل المشكلة الأصلية تمامًا", "لا علاقة له بالمسؤولية"], correct: 0 },
+          { q: "إزاي AI Fluency بتزود كفاءة الـ Builder من غير ما تقلل ملكيته لشغله؟", options: ["باستخدام الأداة لتسريع أجزاء من العمل مع الحفاظ على التوجيه والمراجعة البشرية", "بالاعتماد الكامل على الأداة في كل خطوة بلا مراجعة", "بإلغاء دور الإنسان بالكامل", "لا علاقة بين الكفاءة والملكية"], correct: 0 }
+        ]
+      }
+    }
+  },
+
+  elements: {
+    label: "Elements of AI",
+    modules: {
+      "what-is-ai": {
+        title: "الفصل 1: ما هو الذكاء الاصطناعي؟",
+        questions: [
+          { q: "تعريف مبسط للذكاء الاصطناعي هو إيه؟", options: ["نظام بيقدر يقوم بمهام كانت بتحتاج ذكاء بشري تقليديًا", "أي جهاز كمبيوتر عادي", "برنامج تحرير نصوص بس", "لا يوجد تعريف واضح إطلاقًا"], correct: 0 },
+          { q: "هل كل أتمتة (automation) تعتبر ذكاء اصطناعي؟", options: ["لأ، مش كل أتمتة بسيطة بتُعتبر AI", "أيوه، أي أتمتة هي AI بالتعريف", "مفيش فرق بين المصطلحين خالص", "الأتمتة أعقد من AI دايمًا"], correct: 0 },
+          { q: "الفرق بين الـ AI الضيّق (Narrow AI) والعام (General AI) إيه؟", options: ["الضيّق بيؤدي مهمة محددة، والعام (لسه نظري غالبًا) بيقدر يؤدي أي مهمة ذكاء بشري", "مفيش فرق بينهم خالص", "العام هو المستخدم فعليًا في كل التطبيقات الحالية", "الضيّق أعقد من العام"], correct: 0 }
+        ]
+      },
+      "problem-solving": {
+        title: "الفصل 2: حل المشكلات بالذكاء الاصطناعي",
+        questions: [
+          { q: "أول خطوة منطقية في حل مشكلة باستخدام AI؟", options: ["تحديد المشكلة والهدف بوضوح قبل أي حاجة تانية", "تدريب نموذج ضخم على طول من غير تخطيط", "تجاهل حدود المشكلة", "نشر الحل فورًا من غير اختبار"], correct: 0 },
+          { q: "ليه تحديد \"مساحة البحث\" (search space) مهم في حل المشكلات بالـ AI؟", options: ["عشان النظام يقدر يدور على الحل بكفاءة بدل ما يجرب كل شيء عشوائيًا", "مالوش أي تأثير على الحل", "عشان يبطئ النظام عمدًا", "غير مرتبط بحل المشكلات إطلاقًا"], correct: 0 },
+          { q: "ليه مهم تحدد حدود المشكلة قبل ما تبني حل AI ليها؟", options: ["عشان الحل يفضل مركز وقابل للتقييم بدقة", "مش مهم، أي حل عام هيشتغل", "عشان تخلي المشكلة أعقد بشكل عشوائي", "لا علاقة للتحديد بجودة الحل"], correct: 0 }
+        ]
+      },
+      "real-world-ai": {
+        title: "الفصل 3: الذكاء الاصطناعي في الواقع",
+        questions: [
+          { q: "مثال واقعي على تطبيق AI في الحياة اليومية؟", options: ["فلاتر البريد المزعج (spam) وأنظمة التوصيات", "الآلة الحاسبة العادية", "المصباح الكهربائي التقليدي", "الساعة الميكانيكية"], correct: 0 },
+          { q: "هل من الممكن إن نظام AI حقيقي يغلط رغم استخدامه الواسع؟", options: ["أيوه، ممكن يغلط خصوصًا في حالات غير متوقعة أو بيانات مختلفة عن تدريبه", "لأ، الأنظمة المستخدمة فعليًا مثالية دايمًا", "الغلط مستحيل تقنيًا", "لا علاقة للتدريب بجودة القرار"], correct: 0 },
+          { q: "ليه مهم تختبر نظام AI قبل الاستخدام الفعلي على نطاق واسع؟", options: ["عشان تكتشف الأخطاء والتحيزات المحتملة قبل ما تأثر على ناس حقيقيين", "الاختبار مضيعة وقت ومش ضروري", "عشان تبطئ الإطلاق بلا سبب", "لا علاقة للاختبار بالجودة"], correct: 0 }
+        ]
+      },
+      "machine-learning": {
+        title: "الفصل 4: تعلم الآلة (Machine Learning)",
+        questions: [
+          { q: "تعريف الـ Machine Learning باختصار؟", options: ["النظام بيتعلم الأنماط من البيانات بدل ما يتبرمج يدويًا لكل حالة", "برمجة كل قاعدة بشكل يدوي مباشر", "نوع من أنواع الفيروسات", "لغة برمجة معينة"], correct: 0 },
+          { q: "أي نوع تعلّم بيعتمد على بيانات معنونة (labeled) بشكل أساسي؟", options: ["Supervised learning (التعلم الخاضع للإشراف)", "لا يوجد نوع بيعتمد على بيانات معنونة", "كل الأنواع بتستخدم بيانات غير معنونة فقط", "لا علاقة للبيانات بالتعلم"], correct: 0 },
+          { q: "ليه جودة البيانات مهمة جدًا في التعلم الآلي؟", options: ["لأن جودة تعلّم النموذج بتعتمد بشكل مباشر على جودة البيانات اللي اتدرب عليها", "البيانات مالهاش أي تأثير على النتيجة", "أي بيانات عشوائية هتدي نفس النتيجة", "الجودة مهمة بس في الصور فقط"], correct: 0 }
+        ]
+      },
+      "neural-networks": {
+        title: "الفصل 5: الشبكات العصبية",
+        questions: [
+          { q: "الشبكة العصبية الاصطناعية مستوحاة أساسًا من إيه؟", options: ["طريقة عمل الدماغ البشري والخلايا العصبية", "الحاسبة العادية", "شبكة الكهرباء المنزلية", "لا مصدر إلهام حقيقي"], correct: 0 },
+          { q: "بشكل مبسط، مما تتكون الشبكة العصبية؟", options: ["طبقات من وحدات (عُقد/نيورونز) متصلة ببعضها", "قطعة واحدة فقط بلا طبقات", "أسلاك كهربائية فعلية داخل الجهاز", "برنامج نصي بسيط بلا بنية"], correct: 0 },
+          { q: "ليه الشبكات العصبية بقت قوية جدًا في السنين الأخيرة؟", options: ["توفر بيانات ضخمة وقدرة حوسبة أكبر بكثير من قبل", "لأنها بقت أبسط تقنيًا من قبل", "لأن الحاجة ليها قلّت", "لا سبب تقني حقيقي"], correct: 0 }
+        ]
+      },
+      "implications": {
+        title: "الفصل 6: الانعكاسات المجتمعية",
+        questions: [
+          { q: "من التحديات الأخلاقية الأساسية المرتبطة بالذكاء الاصطناعي؟", options: ["التحيز في البيانات (bias) وقضايا الخصوصية", "لون الشاشة", "حجم الملفات فقط", "سرعة تحميل الصفحة"], correct: 0 },
+          { q: "ليه مهم وجود رقابة بشرية على القرارات المؤثرة اللي بيساهم فيها AI؟", options: ["عشان تقلل احتمال ضرر ناتج عن خطأ أو تحيز في النظام", "الرقابة البشرية مالهاش أي فايدة", "عشان تبطئ القرارات بلا داعي", "الأنظمة دايمًا صح ومحتاجة رقابة"], correct: 0 },
+          { q: "من التأثيرات المحتملة للـ AI على سوق العمل حسب النقاش الشائع في المجال؟", options: ["تغيّر طبيعة بعض الوظائف وظهور مهارات وأدوار جديدة", "إلغاء كل الوظائف فورًا بلا استثناء", "لا تأثير على سوق العمل إطلاقًا", "تأثير على وظيفة واحدة بس في العالم كله"], correct: 0 }
+        ]
+      }
+    }
+  }
+};
+
+const el = id => document.getElementById(id);
+const params = new URLSearchParams(window.location.search);
+const providerId = params.get('course');
+const moduleId = params.get('module');
+const provider = PROVIDERS[providerId];
+
+let answers = {};
+
+async function init() {
+  const card = el('examCard');
+
+  if (!provider) {
+    card.innerHTML = `<div class="exam-sub">الكورس ده مش موجود.</div>`;
+    return;
+  }
+
+  const user = await getCurrentUser();
+  if (!user) {
+    card.innerHTML = `
+      <div class="exam-title">${provider.label}</div>
+      <div class="exam-sub">لازم تسجل دخول الأول عشان تاخد الامتحانات وتكسب نقط.</div>
+      <a href="login.html" class="exam-submit" style="display:block; text-align:center; text-decoration:none;">تسجيل الدخول</a>
+    `;
+    return;
+  }
+
+  if (moduleId && provider.modules[moduleId]) {
+    renderExam(user);
+  } else {
+    renderHub(user);
+  }
+}
+
+async function renderHub(user) {
+  const card = el('examCard');
+  const moduleIds = Object.keys(provider.modules);
+
+  const { data: passedRows } = await supabaseClient
+    .from('exam_attempts')
+    .select('course_id')
+    .eq('user_id', user.id)
+    .eq('passed', true);
+
+  const passedSet = new Set((passedRows || []).map(r => r.course_id));
+  const passedCount = moduleIds.filter(id => passedSet.has(`${providerId}__${id}`)).length;
+
+  card.innerHTML = `
+    <div class="exam-title">${provider.label}</div>
+    <div class="provider-progress">أنجزت ${passedCount} من ${moduleIds.length} امتحانات</div>
+    <div class="module-list" id="moduleList"></div>
+  `;
+
+  const list = el('moduleList');
+  moduleIds.forEach(id => {
+    const mod = provider.modules[id];
+    const passed = passedSet.has(`${providerId}__${id}`);
+    const row = document.createElement('a');
+    row.href = `exam.html?course=${providerId}&module=${id}`;
+    row.className = 'module-row';
+    row.innerHTML = `
+      <span class="module-name">${mod.title}</span>
+      <span class="module-status ${passed ? 'passed' : 'pending'}">${passed ? 'مكتمل ✓' : 'لسه'}</span>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function renderExam() {
+  const mod = provider.modules[moduleId];
+  const card = el('examCard');
+  card.innerHTML = `
+    <div class="exam-title">${mod.title}</div>
+    <div class="exam-sub">لازم تجاوب صح على كل الأسئلة عشان تاخد نقطك (${POINTS_PER_MODULE} نقطة).</div>
+    <div id="questionsWrap"></div>
+    <button class="exam-submit" id="submitExamBtn">تسليم الامتحان</button>
+  `;
+
+  const wrap = el('questionsWrap');
+  mod.questions.forEach((q, qi) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'exam-q';
+    qDiv.innerHTML = `<div class="exam-q-text">${qi + 1}. ${q.q}</div>`;
+    q.options.forEach((opt, oi) => {
+      const optDiv = document.createElement('label');
+      optDiv.className = 'exam-opt';
+      optDiv.innerHTML = `<input type="radio" name="q${qi}" value="${oi}"> ${opt}`;
+      optDiv.addEventListener('click', () => {
+        answers[qi] = oi;
+        qDiv.querySelectorAll('.exam-opt').forEach(o => o.classList.remove('selected'));
+        optDiv.classList.add('selected');
+      });
+      qDiv.appendChild(optDiv);
+    });
+    wrap.appendChild(qDiv);
+  });
+
+  el('submitExamBtn').addEventListener('click', submitExam);
+}
+
+async function submitExam() {
+  const mod = provider.modules[moduleId];
+  const total = mod.questions.length;
+  if (Object.keys(answers).length < total) {
+    alert('جاوب على كل الأسئلة الأول');
+    return;
+  }
+
+  let score = 0;
+  mod.questions.forEach((q, qi) => {
+    if (answers[qi] === q.correct) score++;
+  });
+
+  el('submitExamBtn').disabled = true;
+  el('submitExamBtn').textContent = '...جاري التصحيح';
+
+  const { data, error } = await supabaseClient.rpc('complete_course_exam', {
+    p_course_id: `${providerId}__${moduleId}`,
+    p_score: score,
+    p_total: total,
+    p_points: POINTS_PER_MODULE
+  });
+
+  const card = el('examCard');
+  if (error) {
+    card.innerHTML = `<div class="exam-sub">حصل خطأ: ${error.message}</div>`;
+    return;
+  }
+
+  const passed = data.passed;
+  card.innerHTML = `
+    <div class="exam-result ${passed ? 'pass' : 'fail'}">
+      <div class="exam-sub">${score} / ${total}</div>
+      <div class="big">${passed ? 'ناجح ✅' : 'لسه محتاج مراجعة'}</div>
+      <div class="exam-sub">
+        ${passed
+          ? (data.already_passed ? 'أنت عدّيت الامتحان ده قبل كده، مفيش نقط إضافية.' : `مبروك! أخدت ${POINTS_PER_MODULE} نقطة.`)
+          : 'لازم تجاوب صح على كل الأسئلة عشان تعدي. جرّب تاني بعد ما تراجع المحتوى.'}
+      </div>
+      <div class="exam-actions">
+        <a href="exam.html?course=${providerId}">باقي امتحانات ${provider.label}</a>
+        <a href="courses.html">العودة للكورسات</a>
+        ${!passed ? '<button onclick="location.reload()">إعادة المحاولة</button>' : ''}
+      </div>
+    </div>
+  `;
+}
+
+init();
+</script>
+</body>
+</html>

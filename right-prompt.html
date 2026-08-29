@@ -168,6 +168,7 @@ const ROUNDS = [
 
 let idx = 0;
 let answered = false;
+let correctCount = 0;
 const el = id => document.getElementById(id);
 
 function render(){
@@ -203,6 +204,7 @@ function choose(p, div){
 
   if(p.isBest){
     div.classList.add('best');
+    correctCount++;
   } else {
     div.classList.add('risky','picked-wrong');
   }
@@ -221,12 +223,19 @@ function choose(p, div){
   el('nextBtn').classList.add('show');
 }
 
-el('nextBtn').addEventListener('click', () => {
+el('nextBtn').addEventListener('click', async () => {
   if(idx < ROUNDS.length - 1){ idx++; render(); }
-  else { window.location.href = 'lobby.html'; }
+  else {
+    if (typeof awardGamePoints === 'function') {
+      await awardGamePoints('right-prompt', correctCount * 5);
+    }
+    window.location.href = 'lobby.html';
+  }
 });
 
 render();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </body>
 </html>

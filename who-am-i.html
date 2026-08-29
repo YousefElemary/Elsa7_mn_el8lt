@@ -402,6 +402,10 @@ function finish(){
     .forEach(elm => elm.style.display = 'none');
   el('finalScreen').style.display = 'block';
   el('finalScore').textContent = `${score} نقطة`;
+
+  if (typeof awardGamePoints === 'function') {
+    awardGamePoints('who-am-i', Math.round(score / 3));
+  }
   const ratio = score / (rounds.length * 30);
   let msg;
   if(ratio >= 0.8) msg = 'خبير أدوات رقمي! عرفت الأدوات من أول تلميح غالبًا.';
@@ -422,5 +426,7 @@ el('restartBtn').addEventListener('click', () => {
 buildRounds();
 render();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </body>
 </html>

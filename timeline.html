@@ -190,6 +190,9 @@ function renderNode(id){
     el('choicesList').innerHTML = `<button class="btn btn-primary" id="restartBtn">جرّب سيناريو تاني</button>`;
     el('restartBtn').addEventListener('click', showPicker);
     renderRail();
+    if (typeof awardGamePoints === 'function') {
+      awardGamePoints('timeline', 15);
+    }
     return;
   }
 
@@ -211,5 +214,7 @@ function renderNode(id){
 
 showPicker();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </body>
 </html>
