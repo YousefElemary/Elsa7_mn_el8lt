@@ -3,6 +3,8 @@
 <head>
 <script>if (!location.pathname.endsWith("login.html")) { document.documentElement.style.visibility = "hidden"; }</script>
 <meta charset="UTF-8">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0c10">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الصح من الغلط | اللعبة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -577,5 +579,12 @@ buildTierList();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').catch(console.error);
+  });
+}
+</script>
 </body>
 </html>
