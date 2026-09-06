@@ -56,8 +56,9 @@
 <body class="profile-page-body">
 
 <nav class="navbar" id="navbar">
-  <div class="navbar-container">
+  <div class="navbar-container" style="justify-content:space-between; display:flex; align-items:center; width:100%;">
     <a href="index.html" class="navbar-logo">الصح <span class="accent-gold">من</span> الغلط</a>
+    <a href="index.html" style="font-family:var(--font-arabic); font-size:.85rem; color:var(--text-muted); border:1px solid var(--glass-border); padding:8px 16px; border-radius:20px; text-decoration:none;">← الرئيسية</a>
   </div>
 </nav>
 
@@ -478,5 +479,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<script src="pwa-install.js"></script>
 </body>
 </html>
