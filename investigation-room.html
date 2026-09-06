@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<script>if (!location.pathname.endsWith("login.html")) { document.documentElement.style.visibility = "hidden"; }</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>غرفة التحقيق | الصح من الغلط</title>
@@ -80,6 +81,32 @@
   .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink);}
   .btn[disabled]{opacity:.4; cursor:default;}
 
+  .stage-intro{font-size:14px; color:var(--dim); line-height:1.9; margin-bottom:22px;}
+  .stage-list{display:flex; flex-direction:column; gap:14px;}
+  .stage-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:20px; cursor:pointer; transition:border-color .15s, transform .15s;
+  }
+  .stage-card:hover{border-color:var(--scan); transform:translateY(-2px);}
+  .stage-card-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+  .stage-num{font-family:monospace; font-size:11px; color:var(--scan); letter-spacing:2px;}
+  .stage-diff{font-family:monospace; font-size:11px; padding:3px 10px; border-radius:20px; border:1px solid var(--line);}
+  .stage-diff.easy{color:var(--signal); border-color:var(--signal);}
+  .stage-diff.mid{color:var(--warn); border-color:var(--warn);}
+  .stage-diff.hard{color:var(--noise); border-color:var(--noise);}
+  .stage-title{font-family:'Cairo',sans-serif; font-weight:800; font-size:18px; margin-bottom:6px;}
+  .stage-desc{font-size:13px; color:var(--dim); line-height:1.7; margin-bottom:10px;}
+  .stage-meta{font-family:monospace; font-size:11px; color:var(--dim);}
+  .stage-best{color:var(--signal);}
+
+  .finish-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:26px; text-align:center;
+  }
+  .finish-score{font-family:'Cairo',sans-serif; font-weight:800; font-size:34px; margin:10px 0; color:var(--scan);}
+  .finish-label{font-family:monospace; font-size:12px; color:var(--dim); letter-spacing:1px;}
+  .finish-note{font-size:14px; color:var(--dim); line-height:1.85; margin:16px 0 22px;}
+
   footer{margin-top:auto; padding-top:30px; text-align:center; color:var(--dim); font-size:12px; font-family:monospace;}
 </style>
 </head>
@@ -90,25 +117,47 @@
     <div class="mark">غرفة <span>التحقيق</span></div>
   </div>
 
-  <span class="case-tag" id="caseNum">CASE_01</span>
-  <h1 class="case-title" id="caseTitle"></h1>
-
-  <div class="scenario-card" id="scenarioText"></div>
-
-  <div class="clues" id="cluesList"></div>
-
-  <div class="verdict-box">
-    <span class="verdict-label">حكمك: الاستخدام ده صح ولا غلط؟</span>
-    <div class="verdict-btns">
-      <button class="vbtn ok" id="btnRight">صح ✓</button>
-      <button class="vbtn bad" id="btnWrong">غلط ✕</button>
-    </div>
-    <div class="verdict-result" id="verdictResult"></div>
+  <!-- شاشة اختيار المرحلة -->
+  <div id="stagePicker">
+    <p class="stage-intro">اختار مرحلة وابدأ تحقق في القضايا. كل مرحلة أصعب من اللي قبلها.</p>
+    <div class="stage-list" id="stageList"></div>
   </div>
 
-  <div class="nav-row">
-    <button class="btn btn-ghost" id="prevBtn">القضية السابقة</button>
-    <button class="btn btn-primary" id="nextBtn" disabled>القضية التالية</button>
+  <!-- شاشة القضية -->
+  <div id="caseView" style="display:none;">
+    <span class="case-tag" id="caseNum">CASE_01</span>
+    <h1 class="case-title" id="caseTitle"></h1>
+
+    <div class="scenario-card" id="scenarioText"></div>
+
+    <div class="clues" id="cluesList"></div>
+
+    <div class="verdict-box">
+      <span class="verdict-label">حكمك: الاستخدام ده صح ولا غلط؟</span>
+      <div class="verdict-btns">
+        <button class="vbtn ok" id="btnRight">صح ✓</button>
+        <button class="vbtn bad" id="btnWrong">غلط ✕</button>
+      </div>
+      <div class="verdict-result" id="verdictResult"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" id="prevBtn">القضية السابقة</button>
+      <button class="btn btn-primary" id="nextBtn" disabled>القضية التالية</button>
+    </div>
+  </div>
+
+  <!-- شاشة النهاية -->
+  <div id="finishView" style="display:none;">
+    <div class="finish-box">
+      <span class="finish-label" id="finishStageLabel">المرحلة اتخلصت</span>
+      <div class="finish-score" id="finishScore"></div>
+      <p class="finish-note" id="finishNote"></p>
+      <div class="nav-row">
+        <button class="btn btn-ghost" id="backToStagesBtn">قائمة المراحل</button>
+        <button class="btn btn-primary" id="nextStageBtn">المرحلة الجاية</button>
+      </div>
+    </div>
   </div>
 
   <footer>غرفة التحقيق — الصح من الغلط</footer>
@@ -119,76 +168,222 @@
    القضايا — عدّل هنا بس
    كل قضية: عنوان، نص السيناريو، مصفوفة أدلة (عنوان + تفاصيل)،
    verdict الصح (true = "صح"، false = "غلط")، وشرح بعد الحكم.
+
+   المراحل — STAGES: كل مرحلة ليها key, name, diff (easy/mid/hard),
+   desc, pointsPerCorrect, وcases (نفس بنية القضية القديمة).
 ===================================================================== */
-const CASES = [
-  {
-    title: "الصورة اللي اتنشرت في نص الليل",
-    scenario: "حد نشر صورة بتقول إنها لحادثة كبيرة حصلت في مدينتك، الصورة فيها إضاءة وظلال غريبة شوية والتفاصيل في الخلفية مش منطقية. الشخص قال إنه أخد الصورة بنفسه.",
-    clues: [
-      { title: "فحص الإضاءة والظلال", body: "الظل بتاع أكتر من عنصر في الصورة بيتجه لاتجاهات مختلفة — ده مؤشر كلاسيكي على صورة مولّدة بالـ AI." },
-      { title: "تاريخ الحساب", body: "الحساب اتعمل من أسبوعين بس ومفيهوش أي منشورات تانية غير المنشور ده." },
-      { title: "بحث عكسي عن الصورة", body: "نفس الصورة (أو صور شبيهة جدًا) موجودة على مواقع AI-generated art من شهرين." }
-    ],
-    verdict: false,
-    explain: "الأدلة التلاتة بتأكد إن الصورة مولّدة بالـ AI ومش حقيقية، والشخص بيقدمها على إنها واقعية — ده استخدام غلط ومضلل."
+const STAGES = {
+  stage1: {
+    name: "المرحلة الأولى: أساسيات",
+    diff: "easy",
+    diffLabel: "سهل",
+    desc: "قضايا واضحة المعالم — تدريب على أول خطوة في التفكير النقدي.",
+    pointsPerCorrect: 3,
+    cases: [
+      {
+        title: "الصورة اللي اتنشرت في نص الليل",
+        scenario: "حد نشر صورة بتقول إنها لحادثة كبيرة حصلت في مدينتك، الصورة فيها إضاءة وظلال غريبة شوية والتفاصيل في الخلفية مش منطقية. الشخص قال إنه أخد الصورة بنفسه.",
+        clues: [
+          { title: "فحص الإضاءة والظلال", body: "الظل بتاع أكتر من عنصر في الصورة بيتجه لاتجاهات مختلفة — ده مؤشر كلاسيكي على صورة مولّدة بالـ AI." },
+          { title: "تاريخ الحساب", body: "الحساب اتعمل من أسبوعين بس ومفيهوش أي منشورات تانية غير المنشور ده." },
+          { title: "بحث عكسي عن الصورة", body: "نفس الصورة (أو صور شبيهة جدًا) موجودة على مواقع AI-generated art من شهرين." }
+        ],
+        verdict: false,
+        explain: "الأدلة التلاتة بتأكد إن الصورة مولّدة بالـ AI ومش حقيقية، والشخص بيقدمها على إنها واقعية — ده استخدام غلط ومضلل."
+      },
+      {
+        title: "الرسالة اللي بتوعد بربح مضمون",
+        scenario: "وصلتك رسالة من 'مستشار مالي' بيقولك إن فيه استثمار مضمون 100% وهيضاعف فلوسك في أسبوع، ومرفق معاها صوت للشخص بيشرح الفكرة بصوت واثق جدًا.",
+        clues: [
+          { title: "تحليل الصوت", body: "نبرة الصوت ثابتة بشكل غير طبيعي في كل الجملة، من غير أي توقفات طبيعية أو أنفاس — علامة على صوت مصطنع بالـ AI." },
+          { title: "منطق العرض", body: "لا يوجد استثمار حقيقي بيضمن ربح 100% في أسبوع — ده غير منطقي ماليًا." },
+          { title: "مصدر الرسالة", body: "الرقم اللي بعت منه الرسالة غير مسجل باسم أي شركة استثمار مرخصة." }
+        ],
+        verdict: false,
+        explain: "صوت مصطنع بالـ AI + وعد مالي غير منطقي + مصدر غير موثّق = محاولة نصب واضحة، مش استخدام مشروع للتكنولوجيا."
+      },
+      {
+        title: "الإيميل اللي بيطلب تحديث بياناتك",
+        scenario: "وصلك إيميل شكله رسمي جدًا من 'إدارة الحساب' بيقول إن فيه مشكلة أمنية طارئة، ولازم تضغط على لينك مرفق وتحدّث بياناتك البنكية فورًا وإلا هيتقفل حسابك.",
+        clues: [
+          { title: "لغة الرسالة", body: "الرسالة بتستخدم أسلوب استعجال وتهديد ('طارئ'، 'هيتقفل حسابك') — ده أسلوب كلاسيكي في التصيد الإلكتروني (Phishing)." },
+          { title: "الرابط المرفق", body: "عنوان الرابط لما تمرر عليه الماوس مختلف شوية عن اسم الموقع الرسمي المعروف." },
+          { title: "الجهة المرسلة", body: "الإيميل الرسمي بيطلب منك عادةً تدخل على الموقع بنفسك من غير ما تضغط لينكات في رسائل." }
+        ],
+        verdict: false,
+        explain: "الرسائل اللي بتخلق إحساس استعجال وتطلب بيانات حساسة عن طريق لينك هي محاولة تصيد إلكتروني، حتى لو شكلها رسمي جدًا."
+      },
+      {
+        title: "رسالة صوتية من 'ابنك' بتطلب فلوس فورًا",
+        scenario: "أم استلمت رسالة صوتية واتساب من رقم غريب، الصوت شبه صوت ابنها جدًا وبيقولها إنه في مشكلة وعايز تحويل فلوس فورًا على رقم محفظة إلكترونية جديد، ومتقلقش تكلم حد.",
+        clues: [
+          { title: "طلب السرية", body: "الرسالة بتصر إنها متكلمش حد — ده أسلوب ضغط نفسي كلاسيكي في عمليات النصب." },
+          { title: "رقم غير معروف", body: "الرسالة جت من رقم جديد تمامًا مش رقم ابنها المعروف." },
+          { title: "استعجال غير مبرر", body: "الطلب لازم يتنفذ 'فورًا' من غير وقت للتأكد أو الاتصال المباشر." }
+        ],
+        verdict: false,
+        explain: "استنساخ الصوت بالـ AI بقى سهل جدًا، وطلب السرية + الاستعجال + رقم غريب كلهم علامات نصب. الخطوة الصح: تتصل بابنها مباشرة على رقمه المعروف للتأكد."
+      }
+    ]
   },
-  {
-    title: "الطالب واللي استخدم AI في بحثه",
-    scenario: "طالب استخدم أداة AI عشان يلخصله مصادر بحث علمي، وبعدين كتب البحث بنفسه بأسلوبه واستشهد بالمصادر الأصلية، وحط في آخر البحث إنه استخدم أداة AI في مرحلة التلخيص.",
-    clues: [
-      { title: "طريقة الاستخدام", body: "الأداة استُخدمت في تنظيم المعلومات مش في كتابة البحث نفسه." },
-      { title: "الشفافية", body: "الطالب صرّح باستخدامه للأداة بوضوح في البحث." },
-      { title: "المصادر", body: "كل الاستشهادات بترجع لمصادر أكاديمية حقيقية قابلة للتحقق." }
-    ],
-    verdict: true,
-    explain: "استخدام AI كأداة مساعدة في التنظيم مع الإفصاح والالتزام بالمصادر الحقيقية ده بالظبط الاستخدام الصح — الأداة ساعدت، ما عملتش الشغل بدل الطالب."
+  stage2: {
+    name: "المرحلة الثانية: الاستخدام الأخلاقي",
+    diff: "mid",
+    diffLabel: "متوسط",
+    desc: "قضايا محتاجة تفكير أعمق في حدود الاستخدام الصح للـ AI في الشغل والدراسة.",
+    pointsPerCorrect: 4,
+    cases: [
+      {
+        title: "الطالب واللي استخدم AI في بحثه",
+        scenario: "طالب استخدم أداة AI عشان يلخصله مصادر بحث علمي، وبعدين كتب البحث بنفسه بأسلوبه واستشهد بالمصادر الأصلية، وحط في آخر البحث إنه استخدم أداة AI في مرحلة التلخيص.",
+        clues: [
+          { title: "طريقة الاستخدام", body: "الأداة استُخدمت في تنظيم المعلومات مش في كتابة البحث نفسه." },
+          { title: "الشفافية", body: "الطالب صرّح باستخدامه للأداة بوضوح في البحث." },
+          { title: "المصادر", body: "كل الاستشهادات بترجع لمصادر أكاديمية حقيقية قابلة للتحقق." }
+        ],
+        verdict: true,
+        explain: "استخدام AI كأداة مساعدة في التنظيم مع الإفصاح والالتزام بالمصادر الحقيقية ده بالظبط الاستخدام الصح — الأداة ساعدت، ما عملتش الشغل بدل الطالب."
+      },
+      {
+        title: "الطالبة اللي استخدمت AI في مراجعة كودها",
+        scenario: "طالبة برمجة استخدمت أداة AI عشان تراجعلها كود كتبته بنفسها، وتقترح تحسينات وتوضحلها الأخطاء. هي فهمت كل التعديلات وطبقتها بإيديها.",
+        clues: [
+          { title: "مين كتب الكود الأصلي", body: "الكود الأساسي والمنطق كله من كتابة الطالبة نفسها." },
+          { title: "دور الأداة", body: "الأداة استُخدمت في المراجعة والتحسين، مش في كتابة الحل من الصفر." },
+          { title: "الفهم", body: "الطالبة قادرة تشرح كل تعديل اتعمل وليه، مش بس ناسخة." }
+        ],
+        verdict: true,
+        explain: "استخدام AI كمراجع وموجّه تقني مع فهم كامل للتعديلات ده استخدام صح وذكي — بيسرّع التعلم مش بيلغيه."
+      },
+      {
+        title: "الموظف اللي سيّب AI يرد على العملاء لوحده",
+        scenario: "موظف خدمة عملاء وصل الأداة بالإيميل، وخلاها ترد تلقائيًا على كل استفسارات العملاء من غير ما يراجع أي رد قبل ما يتبعت، عشان يوفر وقته.",
+        clues: [
+          { title: "المراجعة البشرية", body: "مفيش أي مراجعة بشرية للردود قبل إرسالها للعملاء." },
+          { title: "الحساسية", body: "بعض استفسارات العملاء ممكن تكون معقدة أو حساسة (شكاوى، مبالغ مالية) ومحتاجة حكم بشري." },
+          { title: "المسؤولية", body: "لو الأداة ردت رد غلط أو غير دقيق، مفيش حد راجعه قبل ما يوصل للعميل." }
+        ],
+        verdict: false,
+        explain: "الاعتماد الكامل على AI في تواصل حساس مع عملاء من غير مراجعة بشرية بيحمّل الأداة مسؤولية قرارات لازم إنسان ياخدها — ده استخدام غير مسؤول."
+      },
+      {
+        title: "الكاتب اللي استلهم أفكار من AI",
+        scenario: "كاتب محتوى طلب من أداة AI أفكار ونقط انطلاق لمقال، وبعدين كتب المقال كامل بأسلوبه الخاص وآرائه، ونوّه في نهاية المقال إنه استخدم أداة AI للعصف الذهني بس.",
+        clues: [
+          { title: "مصدر الأفكار مقابل الكتابة", body: "الأداة اقترحت أفكار أولية، لكن الصياغة والتحليل والرأي كله من الكاتب." },
+          { title: "الإفصاح", body: "الكاتب وضّح بشفافية إنه استخدم AI في مرحلة العصف الذهني." },
+          { title: "الأصالة", body: "الأسلوب والرأي النهائي شخصي وموقّع باسم الكاتب." }
+        ],
+        verdict: true,
+        explain: "استخدام AI كنقطة انطلاق للأفكار مع كتابة وتحليل شخصي بالكامل، ومع الإفصاح عن الاستخدام، ده استخدام صح وشفاف."
+      }
+    ]
   },
-  {
-    title: "الرسالة اللي بتوعد بربح مضمون",
-    scenario: "وصلتك رسالة من 'مستشار مالي' بيقولك إن فيه استثمار مضمون 100% وهيضاعف فلوسك في أسبوع، ومرفق معاها صوت للشخص بيشرح الفكرة بصوت واثق جدًا.",
-    clues: [
-      { title: "تحليل الصوت", body: "نبرة الصوت ثابتة بشكل غير طبيعي في كل الجملة، من غير أي توقفات طبيعية أو أنفاس — علامة على صوت مصطنع بالـ AI." },
-      { title: "منطق العرض", body: "لا يوجد استثمار حقيقي بيضمن ربح 100% في أسبوع — ده غير منطقي ماليًا." },
-      { title: "مصدر الرسالة", body: "الرقم اللي بعت منه الرسالة غير مسجل باسم أي شركة استثمار مرخصة." }
-    ],
-    verdict: false,
-    explain: "صوت مصطنع بالـ AI + وعد مالي غير منطقي + مصدر غير موثّق = محاولة نصب واضحة، مش استخدام مشروع للتكنولوجيا."
-  },
-  {
-    title: "الإيميل اللي بيطلب تحديث بياناتك",
-    scenario: "وصلك إيميل شكله رسمي جدًا من 'إدارة الحساب' بيقول إن فيه مشكلة أمنية طارئة، ولازم تضغط على لينك مرفق وتحدّث بياناتك البنكية فورًا وإلا هيتقفل حسابك.",
-    clues: [
-      { title: "لغة الرسالة", body: "الرسالة بتستخدم أسلوب استعجال وتهديد ('طارئ'، 'هيتقفل حسابك') — ده أسلوب كلاسيكي في التصيد الإلكتروني (Phishing)." },
-      { title: "الرابط المرفق", body: "عنوان الرابط لما تمرر عليه الماوس مختلف شوية عن اسم الموقع الرسمي المعروف." },
-      { title: "الجهة المرسلة", body: "الإيميل الرسمي بيطلب منك عادةً تدخل على الموقع بنفسك من غير ما تضغط لينكات في رسائل." }
-    ],
-    verdict: false,
-    explain: "الرسائل اللي بتخلق إحساس استعجال وتطلب بيانات حساسة عن طريق لينك هي محاولة تصيد إلكتروني، حتى لو شكلها رسمي جدًا."
-  },
-  {
-    title: "الطالبة اللي استخدمت AI في مراجعة كودها",
-    scenario: "طالبة برمجة استخدمت أداة AI عشان تراجعلها كود كتبته بنفسها، وتقترح تحسينات وتوضحلها الأخطاء. هي فهمت كل التعديلات وطبقتها بإيديها.",
-    clues: [
-      { title: "مين كتب الكود الأصلي", body: "الكود الأساسي والمنطق كله من كتابة الطالبة نفسها." },
-      { title: "دور الأداة", body: "الأداة استُخدمت في المراجعة والتحسين، مش في كتابة الحل من الصفر." },
-      { title: "الفهم", body: "الطالبة قادرة تشرح كل تعديل اتعمل وليه، مش بس ناسخة." }
-    ],
-    verdict: true,
-    explain: "استخدام AI كمراجع وموجّه تقني مع فهم كامل للتعديلات ده استخدام صح وذكي — بيسرّع التعلم مش بيلغيه."
+  stage3: {
+    name: "المرحلة الثالثة: تحديات متقدمة",
+    diff: "hard",
+    diffLabel: "صعب",
+    desc: "قضايا أصعب في الكشف — التفاصيل فيها أدق وتحتاج انتباه للفروق الدقيقة.",
+    pointsPerCorrect: 5,
+    cases: [
+      {
+        title: "فيديو المسؤول اللي أعلن قرار مفاجئ",
+        scenario: "فيديو منتشر لمسؤول حكومي معروف بيعلن فيه قرار اقتصادي مفاجئ وغير متوقع، الفيديو جودته عالية والصوت واضح جدًا، لكنه اتنشر الأول من حساب مجهول قبل أي قناة رسمية.",
+        clues: [
+          { title: "مصدر النشر", body: "أول ظهور للفيديو كان من حساب مجهول مالوش تاريخ نشر، مش من القنوات الرسمية للمسؤول أو الحكومة." },
+          { title: "غياب التأكيد الرسمي", body: "لحظة انتشار الفيديو، مفيش أي تصريح أو تأكيد رسمي من الجهة المعنية." },
+          { title: "طبيعة القرار", body: "القرار المعلن 'مفاجئ' بشكل غير معتاد لخطوات إعلانية رسمية بتاخد وقتها عادةً." }
+        ],
+        verdict: false,
+        explain: "جودة الفيديو العالية معناها حاجة بقت متاحة جدًا بالـ Deepfake الحديث. غياب المصدر الرسمي + غياب التأكيد + طبيعة الإعلان المفاجئة كلهم مؤشرات على فيديو مزيّف، مش دليل يكفي إنه حقيقي."
+      },
+      {
+        title: "البحث اللي فيه أرقام ملفّقة وسط مصادر حقيقية",
+        scenario: "باحث استخدم AI يساعده يكتب قسم في ورقة بحثية، الأداة استشهدت بمصادر أكاديمية حقيقية وموجودة فعلاً، لكن بعض الإحصائيات والأرقام المذكورة جنبها مش موجودة أصلاً في المصادر دي لما راجعها حد تاني.",
+        clues: [
+          { title: "المصادر نفسها", body: "أسماء المصادر والمجلات العلمية حقيقية وموجودة فعلاً — أول انطباع إنها موثوقة." },
+          { title: "تطابق الأرقام", body: "لما حد راجع المصادر الأصلية، الأرقام والنسب المذكورة في البحث مش موجودة فيها أو مختلفة." },
+          { title: "نمط الهلوسة", body: "الأداة بتربط أرقام مقنعة الشكل بمصادر حقيقية عشان الرد يبان موثوق، حتى لو الأرقام مخترعة — ده 'هلوسة AI'." }
+        ],
+        verdict: false,
+        explain: "وجود مصادر حقيقية مش ضمان كافي — لازم تتأكد إن كل رقم أو إحصائية موجود فعلاً في المصدر المذكور. الاعتماد على الأداة من غير تحقق تفصيلي من كل رقم ده استخدام غلط وخطير أكاديميًا."
+      },
+      {
+        title: "خصم 'محدود' من حساب موثّق",
+        scenario: "حساب انستجرام عليه علامة التوثيق (verified) لبراند مشهور نشر إعلان عن خصم 70% لمدة ساعتين بس، ولازم تدخل على لينك خارجي (مش موقع البراند الرسمي) وتدخل بيانات كارتك عشان تحجز الخصم.",
+        clues: [
+          { title: "علامة التوثيق", body: "الحساب فعلاً موثّق (verified)، وده بيدي إحساس أولي بالثقة." },
+          { title: "الرابط الخارجي", body: "الرابط اللي بيطلب بيانات الكارت مش دومين الموقع الرسمي للبراند المعروف." },
+          { title: "الاستعجال المصطنع", body: "'ساعتين بس' ضغط زمني كلاسيكي يمنعك تفكر أو تتأكد قبل ما تدخل بياناتك." }
+        ],
+        verdict: false,
+        explain: "حتى الحسابات الموثقة ممكن تتخترق أو تتحط عليها إعلانات مزيفة. علامة التوثيق لوحدها مش كافية — لازم تتأكد إن الرابط فعلاً دومين الموقع الرسمي قبل ما تدخل أي بيانات دفع."
+      },
+      {
+        title: "العقد اللي كتبته AI وراجعه محامي",
+        scenario: "شركة ناشئة صغيرة استخدمت أداة AI تكتب أول مسودة لعقد تعاقد مع مورّد، وبعدين محامي بشري متخصص راجع المسودة كاملة، عدّل بنود، وتأكد من مطابقتها للقانون قبل ما الطرفين يوقعوا.",
+        clues: [
+          { title: "دور الأداة", body: "الأداة كتبت مسودة أولية بس، مش العقد النهائي الملزم." },
+          { title: "المراجعة القانونية", body: "محامي بشري متخصص راجع وعدّل كل بند قبل التوقيع." },
+          { title: "المسؤولية القانونية", body: "القرار النهائي والمسؤولية القانونية على المحامي والشركة، مش على الأداة." }
+        ],
+        verdict: true,
+        explain: "استخدام AI في صياغة مسودة أولى لتوفير وقت، مع مراجعة قانونية بشرية متخصصة وكاملة قبل أي التزام قانوني، ده استخدام ذكي ومسؤول — الأداة سرّعت الخطوة الأولى بس القرار والمسؤولية فضلوا بشريين."
+      }
+    ]
   }
-];
+};
+
+const STAGE_ORDER = ['stage1', 'stage2', 'stage3'];
 
 /* ===================================================================== */
 
+let currentStageKey = null;
 let idx = 0;
 let answered = false;
 let correctCount = 0;
 const el = id => document.getElementById(id);
 
+function renderStagePicker(){
+  el('stagePicker').style.display = 'block';
+  el('caseView').style.display = 'none';
+  el('finishView').style.display = 'none';
+
+  const list = el('stageList');
+  list.innerHTML = '';
+  STAGE_ORDER.forEach((key, i) => {
+    const stage = STAGES[key];
+    const card = document.createElement('div');
+    card.className = 'stage-card';
+    card.innerHTML = `
+      <div class="stage-card-top">
+        <span class="stage-num">STAGE_${String(i + 1).padStart(2,'0')}</span>
+        <span class="stage-diff ${stage.diff}">${stage.diffLabel}</span>
+      </div>
+      <div class="stage-title">${stage.name}</div>
+      <div class="stage-desc">${stage.desc}</div>
+      <div class="stage-meta">${stage.cases.length} قضايا · ${stage.pointsPerCorrect} نقاط لكل إجابة صح</div>
+    `;
+    card.addEventListener('click', () => startStage(key));
+    list.appendChild(card);
+  });
+}
+
+function startStage(key){
+  currentStageKey = key;
+  idx = 0;
+  correctCount = 0;
+  el('stagePicker').style.display = 'none';
+  el('finishView').style.display = 'none';
+  el('caseView').style.display = 'block';
+  render();
+}
+
 function render(){
   answered = false;
-  const c = CASES[idx];
-  el('caseNum').textContent = `CASE_${String(idx + 1).padStart(2,'0')} / ${CASES.length}`;
+  const cases = STAGES[currentStageKey].cases;
+  const c = cases[idx];
+  el('caseNum').textContent = `CASE_${String(idx + 1).padStart(2,'0')} / ${cases.length}`;
   el('caseTitle').textContent = c.title;
   el('scenarioText').textContent = c.scenario;
 
@@ -226,7 +421,8 @@ function render(){
 function judge(choice){
   if(answered) return;
   answered = true;
-  const c = CASES[idx];
+  const cases = STAGES[currentStageKey].cases;
+  const c = cases[idx];
   const isCorrect = choice === c.verdict;
 
   const chosenBtn = choice ? el('btnRight') : el('btnWrong');
@@ -246,19 +442,45 @@ el('btnRight').addEventListener('click', () => judge(true));
 el('btnWrong').addEventListener('click', () => judge(false));
 
 el('nextBtn').addEventListener('click', async () => {
-  if(idx < CASES.length - 1){ idx++; render(); }
+  const cases = STAGES[currentStageKey].cases;
+  if(idx < cases.length - 1){ idx++; render(); }
   else {
+    const stage = STAGES[currentStageKey];
+    const earned = correctCount * stage.pointsPerCorrect;
     if (typeof awardGamePoints === 'function') {
-      await awardGamePoints('investigation-room', correctCount * 4);
+      await awardGamePoints('investigation-room', earned);
     }
-    window.location.href = 'lobby.html';
+    showFinish(stage, earned);
   }
 });
 el('prevBtn').addEventListener('click', () => {
   if(idx > 0){ idx--; render(); }
 });
 
-render();
+function showFinish(stage, earned){
+  el('caseView').style.display = 'none';
+  el('finishView').style.display = 'block';
+  el('finishStageLabel').textContent = `خلصت ${stage.name}`;
+  el('finishScore').textContent = `${correctCount} / ${stage.cases.length}`;
+  el('finishNote').textContent = `كسبت ${earned} نقطة. راجع القضايا اللي غلطت فيها في دماغك قبل ما تكمل.`;
+
+  const currentIndex = STAGE_ORDER.indexOf(currentStageKey);
+  const hasNext = currentIndex < STAGE_ORDER.length - 1;
+  const nextBtn = el('nextStageBtn');
+  if (hasNext){
+    nextBtn.style.display = 'block';
+    nextBtn.textContent = 'المرحلة الجاية';
+    nextBtn.onclick = () => startStage(STAGE_ORDER[currentIndex + 1]);
+  } else {
+    nextBtn.style.display = 'block';
+    nextBtn.textContent = 'ارجع اللوبي';
+    nextBtn.onclick = () => { window.location.href = 'lobby.html'; };
+  }
+}
+
+el('backToStagesBtn').addEventListener('click', renderStagePicker);
+
+renderStagePicker();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>

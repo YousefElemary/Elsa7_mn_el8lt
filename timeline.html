@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<script>if (!location.pathname.endsWith("login.html")) { document.documentElement.style.visibility = "hidden"; }</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>خط الزمن | الصح من الغلط</title>
@@ -149,6 +150,32 @@ const NODES = {
   trapBlock: {
     text: "منى عملت بلوك للحساب فورًا، وبعدين بلّغت الجهات الرسمية المختصة بكل الأدلة اللي وثّقتها.",
     end: { badge: "good", title: "تعاملت صح مع الفخ", text: "التوثيق أولاً، بعدين قطع الاتصال بالبلوك، وأخيرًا التبليغ الرسمي — ده بالظبط الترتيب الصح للتعامل مع أي محاولة نصب أو انتحال شخصية." }
+  },
+  jobStart: {
+    text: "سارة بتدور على شغل من البيت، ولقيت إعلان بيقول 'وظيفة إدخال بيانات، راتب ضخم، ٣ ساعات بس في اليوم، ابعتي بياناتك ورسوم اشتراك بسيطة عشان تحجزي مكانك'. إيه أول رد فعل منها؟",
+    choices: [
+      { label: "تدفع الرسوم على طول عشان متفوّتش الفرصة.", next: "jobPay" },
+      { label: "تبحث عن اسم الشركة وتقيّماتها الأول قبل أي خطوة.", next: "jobResearch" }
+    ]
+  },
+  jobPay: {
+    text: "سارة دفعت الرسوم، وبعدها اختفى الشخص اللي كان بيتكلم معاها ومردش تاني.",
+    end: { badge: "bad", title: "وقعت في فخ نصب وظيفي", text: "أي وظيفة بتطلب فلوس مقدمًا هي علامة نصب شبه مؤكدة. الوظائف الحقيقية بتدفعلك هي، مش العكس." }
+  },
+  jobResearch: {
+    text: "سارة بحثت عن اسم الشركة، ولقيت مفيش أي وجود رسمي ليها، وتقييمات قليلة كلها بتحذر من نفس الإعلان.",
+    choices: [
+      { label: "تتجاهل التحذيرات وتكمل لأن الراتب مغري.", next: "jobIgnore" },
+      { label: "تتجنب الإعلان وتبلغ عنه في المنصة اللي شافته فيها.", next: "jobReport" }
+    ]
+  },
+  jobIgnore: {
+    text: "سارة قررت تكمل رغم التحذيرات، وبعتت بياناتها الشخصية كاملة قبل ما تتراجع.",
+    end: { badge: "mid", title: "مخاطرة متجنّبة بالتأخير", text: "البحث كان خطوة صح، بس تجاهل نتيجته وإكمال التقديم رغم التحذيرات بيلغي فايدة البحث نفسه." }
+  },
+  jobReport: {
+    text: "سارة تجنبت الإعلان بالكامل وبلّغت عنه، وبعد كده لقت وظيفة حقيقية من موقع توظيف موثوق.",
+    end: { badge: "good", title: "حمت نفسها بالتحقق", text: "البحث عن الشركة قبل أي التزام، والإبلاغ عن الإعلانات المشبوهة، ده بالظبط السلوك اللي بيحمي من عمليات النصب الوظيفي المنتشرة أونلاين." }
   }
 };
 
@@ -173,9 +200,11 @@ function showPicker(){
   el('choicesList').innerHTML = `
     <div class="choice" id="pickCourse">كريم والمشروع المتأخر</div>
     <div class="choice" id="pickTrap">منى وحساب الانتحال</div>
+    <div class="choice" id="pickJob">سارة والوظيفة الوهمية</div>
   `;
   el('pickCourse').addEventListener('click', () => renderNode('start'));
   el('pickTrap').addEventListener('click', () => renderNode('trapStart'));
+  el('pickJob').addEventListener('click', () => renderNode('jobStart'));
 }
 
 function renderNode(id){

@@ -10,6 +10,57 @@ const SUPABASE_ANON_KEY = "sb_publishable_j-MFqivZtlWUslu8aL9jBQ_HDzkX_zy"; // �
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ============================================================
+// Mandatory login guard
+// كل صفحة عدا login.html لازم يبقى فيها جلسة صالحة، وإلا يترحّل المستخدم فورًا.
+// الصفحة بتتحط مخفية (visibility:hidden) عن طريق سكريبت صغير في <head>،
+// وهنا بنكشفها بس لو فيه جلسة، أو نرحّل المستخدم لصفحة اللوجين لو مفيش.
+// ============================================================
+
+const AUTH_LOGIN_PAGE = "login.html";
+
+function isLoginPage() {
+  return window.location.pathname.split("/").pop() === AUTH_LOGIN_PAGE;
+}
+
+function revealPage() {
+  document.documentElement.style.visibility = "visible";
+}
+
+function redirectToLogin() {
+  const returnTo = encodeURIComponent(window.location.href);
+  window.location.replace(`${AUTH_LOGIN_PAGE}?returnTo=${returnTo}`);
+}
+
+async function requireAuth() {
+  if (isLoginPage()) {
+    revealPage();
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.getSession();
+    if (error || !data || !data.session) {
+      redirectToLogin();
+      return;
+    }
+    revealPage();
+  } catch (e) {
+    console.error("Auth check failed:", e);
+    redirectToLogin();
+  }
+
+  // لو اتعمل تسجيل خروج أو انتهت الجلسة وهو لسه في الصفحة، رحّله فورًا
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (!isLoginPage() && (event === "SIGNED_OUT" || !session)) {
+      redirectToLogin();
+    }
+  });
+}
+
+// شغّل الفحص فورًا (متستناش DOMContentLoaded عشان تقلل وقت ظهور المحتوى قبل التأكد)
+requireAuth();
+
 // ---------- Auth actions ----------
 
 async function signUpUser(email, password, name) {
